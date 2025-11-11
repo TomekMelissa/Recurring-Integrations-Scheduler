@@ -1,6 +1,7 @@
 ﻿/* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
+using log4net;
 using Quartz;
 using RecurringIntegrationsScheduler.Common.Contracts;
 using RecurringIntegrationsScheduler.Common.Helpers;
@@ -16,6 +17,8 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
     /// </summary>
     public class Settings
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(Settings));
+
         /// <summary>
         /// Initialize and verify settings for job
         /// </summary>
@@ -47,6 +50,13 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
             }
 
             UseADAL = dataMap.GetBooleanValue(SettingsConstants.UseADAL);
+            if (UseADAL)
+            {
+                Log.WarnFormat(CultureInfo.InvariantCulture,
+                    "Job {0}: 'UseADAL' is deprecated and will be ignored. MSAL authentication will be used instead.",
+                    context?.JobDetail?.Key);
+                UseADAL = false;
+            }
 
             UseServiceAuthentication = dataMap.GetBooleanValue(SettingsConstants.UseServiceAuthentication);
 

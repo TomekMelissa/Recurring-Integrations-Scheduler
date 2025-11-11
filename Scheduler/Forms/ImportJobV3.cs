@@ -172,7 +172,7 @@ namespace RecurringIntegrationsScheduler.Forms
                         AosUri = ImportJobDetail.JobDataMap.GetString(SettingsConstants.AosUri),
                         AadTenant = ImportJobDetail.JobDataMap.GetString(SettingsConstants.AadTenant),
                         AzureAuthEndpoint = ImportJobDetail.JobDataMap.GetString(SettingsConstants.AzureAuthEndpoint),
-                        UseADAL = ImportJobDetail.JobDataMap.GetBooleanValue(SettingsConstants.UseADAL),
+                        UseADAL = false,
                         Name = $"{Resources.IMPORTED_CHANGE_THIS} {DateTime.Now.ToShortDateString()} {DateTime.Now.ToLongTimeString()}"
                     };
                     Properties.Settings.Default.Instances.Add(axInstance);
@@ -306,7 +306,6 @@ namespace RecurringIntegrationsScheduler.Forms
                 {SettingsConstants.AadTenant, instance.AadTenant},
                 {SettingsConstants.AzureAuthEndpoint, instance.AzureAuthEndpoint},
                 {SettingsConstants.AosUri, instance.AosUri},
-                {SettingsConstants.UseADAL, instance.UseADAL},
                 {SettingsConstants.AadClientId, application.ClientId},
                 {SettingsConstants.UseServiceAuthentication, serviceAuthRadioButton.Checked},
                 {SettingsConstants.ExecutionJobPresent, useMonitoringJobCheckBox.Checked},
@@ -359,7 +358,6 @@ namespace RecurringIntegrationsScheduler.Forms
                 {SettingsConstants.AadTenant, instance.AadTenant},
                 {SettingsConstants.AzureAuthEndpoint, instance.AzureAuthEndpoint},
                 {SettingsConstants.AosUri, instance.AosUri},
-                {SettingsConstants.UseADAL, instance.UseADAL},
                 {SettingsConstants.AadClientId, application.ClientId},
                 {SettingsConstants.UseServiceAuthentication, serviceAuthRadioButton.Checked},
                 {SettingsConstants.RetryCount, retriesCountUpDown.Value},

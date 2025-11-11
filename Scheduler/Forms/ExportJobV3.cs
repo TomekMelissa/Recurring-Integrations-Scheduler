@@ -158,7 +158,7 @@ namespace RecurringIntegrationsScheduler.Forms
                         AosUri = JobDetail.JobDataMap.GetString(SettingsConstants.AosUri),
                         AadTenant = JobDetail.JobDataMap.GetString(SettingsConstants.AadTenant),
                         AzureAuthEndpoint = JobDetail.JobDataMap.GetString(SettingsConstants.AzureAuthEndpoint),
-                        UseADAL = JobDetail.JobDataMap.GetBooleanValue(SettingsConstants.UseADAL),
+                        UseADAL = false,
                         Name = $"{Resources.IMPORTED_CHANGE_THIS} {DateTime.Now.ToShortDateString()} {DateTime.Now.ToLongTimeString()}"
                     };
                     Properties.Settings.Default.Instances.Add(axInstance);
@@ -225,7 +225,6 @@ namespace RecurringIntegrationsScheduler.Forms
                 {SettingsConstants.AadTenant, instance.AadTenant},
                 {SettingsConstants.AzureAuthEndpoint, instance.AzureAuthEndpoint},
                 {SettingsConstants.AosUri, instance.AosUri},
-                {SettingsConstants.UseADAL, instance.UseADAL},
                 {SettingsConstants.UseServiceAuthentication, serviceAuthRadioButton.Checked},
                 {SettingsConstants.AadClientId, application.ClientId},
                 {SettingsConstants.UnzipPackage, unzipCheckBox.Checked},

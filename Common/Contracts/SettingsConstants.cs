@@ -24,7 +24,7 @@ namespace RecurringIntegrationsScheduler.Common.Contracts
         public const string AadTenant = "AadTenant";
 
         /// <summary>
-        /// Is ADAL used for authentication
+        /// Legacy flag indicating ADAL authentication (retained for backward compatibility only).
         /// </summary>
         public const string UseADAL = "UseADAL";
 

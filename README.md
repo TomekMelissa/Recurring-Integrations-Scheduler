@@ -23,3 +23,13 @@ Please check https://github.com/Microsoft/Recurring-Integrations-Scheduler/wiki
 ## Support
 
 RIS is not officially supported by Microsoft. Please log an issue here on Github if you encounter a bug in RIS.
+
+## Testing
+
+A lightweight MSTest project lives under `Common.Tests`. You can run it from Visual Studio's Test Explorer or via the command line:
+
+```powershell
+dotnet test Common.Tests\Common.Tests.csproj
+```
+
+The tests exercise core helpers (file handling, zip extraction safeguards) and provide a starting point for broader coverage.

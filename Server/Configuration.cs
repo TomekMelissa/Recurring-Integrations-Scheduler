@@ -4,6 +4,7 @@ using System;
 using System.Collections.Specialized;
 using System.Configuration;
 using log4net;
+using System.Text.RegularExpressions;
 
 namespace RecurringIntegrationsScheduler.Server
 {
@@ -23,6 +24,9 @@ namespace RecurringIntegrationsScheduler.Server
 		private const string DefaultServiceName = "QuartzServer";
 		private const string DefaultServiceDisplayName = "Quartz Server";
 		private const string DefaultServiceDescription = "Quartz Job Scheduling Server";
+        private const int MaxServiceDisplayLength = 256;
+        private const int MaxServiceDescriptionLength = 512;
+        private static readonly Regex ServiceNameRegex = new Regex(@"^[A-Za-z0-9_.-]+$", RegexOptions.Compiled);
 	    private static readonly string DefaultServerImplementationType = typeof(QuartzServer).AssemblyQualifiedName!;
 
 	    private static readonly NameValueCollection? configuration;
@@ -46,25 +50,25 @@ namespace RecurringIntegrationsScheduler.Server
         /// Gets the name of the service.
         /// </summary>
         /// <value>The name of the service.</value>
-		public static string ServiceName => GetConfigurationOrDefault(KeyServiceName, DefaultServiceName);
+		public static string ServiceName => GetConfigurationOrDefault(KeyServiceName, DefaultServiceName, IsValidServiceName, "service name");
 
 	    /// <summary>
         /// Gets the display name of the service.
         /// </summary>
         /// <value>The display name of the service.</value>
-		public static string ServiceDisplayName => GetConfigurationOrDefault(KeyServiceDisplayName, DefaultServiceDisplayName);
+		public static string ServiceDisplayName => GetConfigurationOrDefault(KeyServiceDisplayName, DefaultServiceDisplayName, value => value.Length <= MaxServiceDisplayLength, "service display name");
 
 	    /// <summary>
         /// Gets the service description.
         /// </summary>
         /// <value>The service description.</value>
-		public static string ServiceDescription => GetConfigurationOrDefault(KeyServiceDescription, DefaultServiceDescription);
+		public static string ServiceDescription => GetConfigurationOrDefault(KeyServiceDescription, DefaultServiceDescription, value => value.Length <= MaxServiceDescriptionLength, "service description");
 
 	    /// <summary>
         /// Gets the type name of the server implementation.
         /// </summary>
         /// <value>The type of the server implementation.</value>
-	    public static string ServerImplementationType => GetConfigurationOrDefault(KeyServerImplementationType, DefaultServerImplementationType);
+	    public static string ServerImplementationType => GetServerImplementationType();
 
 	    /// <summary>
 		/// Returns configuration value with given key. If configuration
@@ -73,19 +77,48 @@ namespace RecurringIntegrationsScheduler.Server
 		/// <param name="configurationKey">Key to read configuration with.</param>
 		/// <param name="defaultValue">Default value to return if configuration is not found</param>
 		/// <returns>The configuration value.</returns>
-		private static string GetConfigurationOrDefault(string configurationKey, string defaultValue)
+		private static string GetConfigurationOrDefault(string configurationKey, string defaultValue, Func<string, bool>? validator = null, string? propertyName = null)
 		{
-			string? retValue = null;
-            if (configuration != null)
+			var rawValue = configuration?[configurationKey];
+			if (string.IsNullOrWhiteSpace(rawValue))
+			{
+				return defaultValue;
+			}
+
+			var trimmedValue = rawValue!.Trim();
+			if (validator != null && !validator(trimmedValue))
+			{
+				if (!string.IsNullOrEmpty(propertyName))
+				{
+					log.Warn($"Invalid {propertyName} '{trimmedValue}'. Falling back to default value '{defaultValue}'.");
+				}
+				return defaultValue;
+			}
+
+			return trimmedValue;
+		}
+
+        private static bool IsValidServiceName(string value)
+        {
+            return value.Length <= MaxServiceDisplayLength && ServiceNameRegex.IsMatch(value);
+        }
+
+	        private static string GetServerImplementationType()
+	        {
+	            var configured = configuration?[KeyServerImplementationType];
+	            if (string.IsNullOrWhiteSpace(configured))
+	            {
+	                return DefaultServerImplementationType;
+	            }
+
+	            var trimmed = configured!.Trim();
+            if (Type.GetType(trimmed, throwOnError: false) == null)
             {
-                retValue = configuration[configurationKey];
+                log.Warn($"Server implementation type '{trimmed}' could not be loaded. Falling back to default.");
+                return DefaultServerImplementationType;
             }
 
-			if (retValue == null || retValue.Trim().Length == 0)
-			{
-				retValue = defaultValue;
-			}
-			return retValue;
-		}
+            return trimmed;
+        }
 	}
 }

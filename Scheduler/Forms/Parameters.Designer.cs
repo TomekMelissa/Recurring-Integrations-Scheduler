@@ -392,7 +392,7 @@ namespace RecurringIntegrationsScheduler.Forms
             // instanceUseADAL
             // 
             this.instanceUseADAL.DataPropertyName = "UseADAL";
-            this.instanceUseADAL.HeaderText = "ADAL";
+            this.instanceUseADAL.HeaderText = "ADAL (legacy)";
             this.instanceUseADAL.MinimumWidth = 9;
             this.instanceUseADAL.Name = "instanceUseADAL";
             this.instanceUseADAL.ReadOnly = true;

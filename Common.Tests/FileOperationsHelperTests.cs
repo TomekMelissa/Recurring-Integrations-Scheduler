@@ -22,7 +22,9 @@ namespace RecurringIntegrationsScheduler.Common.Tests
 
                 var files = FileOperationsHelper.GetFiles(MessageStatus.Enqueued, tempDir, "*.txt", SearchOption.TopDirectoryOnly, OrderByOptions.FileName).ToList();
 
+#pragma warning disable MSTEST0037 // Prefer Assert.HasCount (not available in MSTest v3)
                 Assert.AreEqual(2, files.Count);
+#pragma warning restore MSTEST0037
                 Assert.AreEqual("a.txt", files[0].Name);
                 Assert.AreEqual("b.txt", files[1].Name);
             }

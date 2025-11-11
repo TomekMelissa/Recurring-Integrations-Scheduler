@@ -2,7 +2,6 @@
    Licensed under the MIT License. */
 
 using Microsoft.Identity.Client;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using RecurringIntegrationsScheduler.Common.JobSettings;
 using System;
 using System.Linq;
@@ -35,8 +34,7 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// <value>
         /// Authentication result.
         /// </value>
-        private Microsoft.Identity.Client.AuthenticationResult AuthenticationResult { get; set; }
-        private Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationResult AuthenticationResultADAL { get; set; }
+        private AuthenticationResult AuthenticationResult { get; set; }
 
         /// <summary>
         /// Sets authorization header.
@@ -44,7 +42,9 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// <returns>Authorization header</returns>
         private async Task<string> AuthorizationHeader()
         {
-            if (!string.IsNullOrEmpty(_authorizationHeader) && (DateTime.UtcNow.AddSeconds(60) < AuthenticationResult.ExpiresOn))
+            if (!string.IsNullOrEmpty(_authorizationHeader) &&
+                AuthenticationResult != null &&
+                (DateTime.UtcNow.AddSeconds(60) < AuthenticationResult.ExpiresOn))
             {
                 return _authorizationHeader;
             }
@@ -75,46 +75,30 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
                 }
                 else
                 {
-                    using var securePassword = new SecureString();
-                    foreach (char c in _settings.UserPassword)
+                    var password = EnsureUserPassword();
+                    try
                     {
-                        securePassword.AppendChar(c);
+#pragma warning disable 618
+                        AuthenticationResult = await appPublic.AcquireTokenByUsernamePassword(scopes, _settings.UserName, password).ExecuteAsync();
+#pragma warning restore 618
                     }
-                    AuthenticationResult = await appPublic.AcquireTokenByUsernamePassword(scopes, _settings.UserName, securePassword).ExecuteAsync();
+                    finally
+                    {
+                        password.Dispose();
+                    }
                 }
             }
             return _authorizationHeader = AuthenticationResult.CreateAuthorizationHeader();
         }
 
-        private async Task<string> AuthorizationHeaderADAL()
+        private SecureString EnsureUserPassword()
         {
-            if (!string.IsNullOrEmpty(_authorizationHeader) &&
-                (DateTime.UtcNow.AddSeconds(60) < AuthenticationResultADAL.ExpiresOn)) return _authorizationHeader;
-
-            var uri = new UriBuilder(_settings.AzureAuthEndpoint)
+            if (_settings.UserPassword == null || _settings.UserPassword.Length == 0)
             {
-                Path = _settings.AadTenant
-            };
-
-            var aosUriAuthUri = new Uri(_settings.AosUri);
-            string aosUriAuth = aosUriAuthUri.GetLeftPart(UriPartial.Authority);
-
-            var authenticationContext = new AuthenticationContext(uri.ToString(), validateAuthority: false);
-
-            if (_settings.UseServiceAuthentication)
-            {
-                var credentials = new Microsoft.IdentityModel.Clients.ActiveDirectory.ClientCredential(_settings.AadClientId.ToString(), _settings.AadClientSecret);
-
-                AuthenticationResultADAL = await authenticationContext.AcquireTokenAsync(aosUriAuth, credentials);
-            }
-            else
-            {
-                var credentials = new UserPasswordCredential(_settings.UserName, _settings.UserPassword);
-
-                AuthenticationResultADAL = await authenticationContext.AcquireTokenAsync(aosUriAuth, _settings.AadClientId.ToString(), credentials);
+                throw new InvalidOperationException("User password is not configured for interactive authentication.");
             }
 
-            return _authorizationHeader = AuthenticationResultADAL.CreateAuthorizationHeader();
+            return _settings.UserPassword.Copy();
         }
 
         /// <summary>
@@ -125,14 +109,7 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// </returns>
         public async Task<string> GetValidAuthenticationHeader()
         {
-            if (_settings.UseADAL)
-            {
-                _authorizationHeader = await AuthorizationHeaderADAL();
-            }
-            else
-            {
-                _authorizationHeader = await AuthorizationHeader();
-            }
+            _authorizationHeader = await AuthorizationHeader();
             return _authorizationHeader;
         }
     }

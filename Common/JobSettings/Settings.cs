@@ -7,6 +7,7 @@ using RecurringIntegrationsScheduler.Common.Helpers;
 using RecurringIntegrationsScheduler.Common.Properties;
 using System;
 using System.Globalization;
+using System.Security;
 
 namespace RecurringIntegrationsScheduler.Common.JobSettings
 {
@@ -73,12 +74,13 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                     throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.User_principal_name_is_missing_in_job_configuration));
                 }
 
-                UserPassword = dataMap.GetString(SettingsConstants.UserPassword);
-                if (string.IsNullOrEmpty(UserPassword))
+                var encryptedPassword = dataMap.GetString(SettingsConstants.UserPassword);
+                if (string.IsNullOrEmpty(encryptedPassword))
                 {
                     throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.User_password_is_missing_in_job_configuration));
                 }
-                UserPassword = EncryptDecrypt.Decrypt(UserPassword);
+                var decryptedPassword = EncryptDecrypt.Decrypt(encryptedPassword);
+                SetUserPassword(decryptedPassword);
             }
 
             DelayBetweenFiles = dataMap.GetInt(SettingsConstants.DelayBetweenFiles);
@@ -205,11 +207,9 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
         public string AadTenant { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [use ADAL for authentication].
+        /// <summary>
+        /// Legacy flag for ADAL authentication (retained for backward compatibility, no longer used).
         /// </summary>
-        /// <value>
-        /// <c>true</c> if [use ADAL for authentication]; otherwise, <c>false</c>.
-        /// </value>
         public bool UseADAL { get; set; }
 
         /// <summary>
@@ -250,7 +250,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
         /// <value>
         /// The user password.
         /// </value>
-        public string UserPassword { get; set; }
+        public SecureString UserPassword { get; private set; }
 
         /// <summary>
         /// Gets or sets execution interval.
@@ -413,5 +413,40 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
         public string JobKey { get; private set; }
 
         #endregion
+
+        /// <summary>
+        /// Assigns a decrypted password to the SecureString holder.
+        /// </summary>
+        /// <param name="plainText">The decrypted password.</param>
+        /// <exception cref="JobExecutionException">Thrown when password is empty.</exception>
+        public void SetUserPassword(string plainText)
+        {
+            if (string.IsNullOrEmpty(plainText))
+            {
+                throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.User_password_is_missing_in_job_configuration));
+            }
+
+            UserPassword?.Dispose();
+            UserPassword = ConvertToSecureString(plainText);
+        }
+
+        private static SecureString ConvertToSecureString(string plainText)
+        {
+            if (plainText == null)
+            {
+                return null;
+            }
+
+            var secureString = new SecureString();
+            var buffer = plainText.ToCharArray();
+            foreach (var c in buffer)
+            {
+                secureString.AppendChar(c);
+            }
+
+            secureString.MakeReadOnly();
+            Array.Clear(buffer, 0, buffer.Length);
+            return secureString;
+        }
     }
 }

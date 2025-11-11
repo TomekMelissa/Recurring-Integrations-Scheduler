@@ -1,4 +1,5 @@
 //https://github.com/quartznet/quartznet
+#nullable enable
 using System;
 using System.Collections.Specialized;
 using System.Configuration;

@@ -80,7 +80,6 @@ namespace RecurringIntegrationsScheduler.Job
         {
             try
             {
-                log4net.Config.XmlConfigurator.Configure();
                 _context = context;
                 _settings.Initialize(context);
 
@@ -125,7 +124,7 @@ namespace RecurringIntegrationsScheduler.Job
                         Log.Error(ex.Message, ex);
                     }
                 }
-                if (context.Scheduler.SchedulerName != "Private")
+                if (!string.Equals(context.Scheduler.SchedulerName, RecurringIntegrationsScheduler.Common.Contracts.SchedulerConstants.PrivateSchedulerName, StringComparison.Ordinal))
                 {
                     throw new JobExecutionException(string.Format(Resources.Execution_monitor_job_0_failed, _context.JobDetail.Key), ex, false);
                 }
@@ -168,7 +167,7 @@ namespace RecurringIntegrationsScheduler.Job
             {
                 if (fileCount > 0 && _settings.DelayBetweenStatusCheck > 0) //Only delay after first file and never after last.
                 {
-                    System.Threading.Thread.Sleep(TimeSpan.FromSeconds(_settings.DelayBetweenStatusCheck));
+                    await Task.Delay(TimeSpan.FromSeconds(_settings.DelayBetweenStatusCheck));
                 }
                 fileCount++;
 
@@ -178,7 +177,7 @@ namespace RecurringIntegrationsScheduler.Job
                 {
                     throw new JobExecutionException($@"Job: {_settings.JobKey}. GetExecutionSummaryStatus request failed.");
                 }
-                var jobStatusDetail = HttpClientHelper.ReadResponseString(responseGetExecutionSummaryStatus);
+                var jobStatusDetail = await HttpClientHelper.ReadResponseStringAsync(responseGetExecutionSummaryStatus);
 
                 // If status was found and is not null,
                 if (jobStatusDetail != null)
@@ -237,7 +236,7 @@ namespace RecurringIntegrationsScheduler.Job
                                     Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Checking_for_error_keys_for_data_entity_1, _context.JobDetail.Key, entity));
                                 }
                                 var errorsExistResponse = await _httpClientHelper.GenerateImportTargetErrorKeysFile(dataMessage.MessageId, entity);
-                                if (errorsExistResponse.IsSuccessStatusCode && Convert.ToBoolean(HttpClientHelper.ReadResponseString(errorsExistResponse)))
+                                if (errorsExistResponse.IsSuccessStatusCode && Convert.ToBoolean(await HttpClientHelper.ReadResponseStringAsync(errorsExistResponse)))
                                 {
                                     var errorFileUrl = string.Empty;
                                     HttpResponseMessage errorFileUrlResponse;
@@ -246,10 +245,10 @@ namespace RecurringIntegrationsScheduler.Job
                                         errorFileUrlResponse = await _httpClientHelper.GetImportTargetErrorKeysFileUrl(dataMessage.MessageId, entity);
                                         if(errorFileUrlResponse.IsSuccessStatusCode)
                                         {
-                                            errorFileUrl = HttpClientHelper.ReadResponseString(errorFileUrlResponse);
+                                            errorFileUrl = await HttpClientHelper.ReadResponseStringAsync(errorFileUrlResponse);
                                             if (errorFileUrl.Length == 0)
                                             {
-                                                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(_settings.DelayBetweenStatusCheck));
+                                                await Task.Delay(TimeSpan.FromSeconds(_settings.DelayBetweenStatusCheck));
                                             }
                                         }
                                     }
@@ -327,7 +326,7 @@ Message Id: {dataMessage.MessageId}");
             var linkUrl = string.Empty;
             if (linkUrlResponse.IsSuccessStatusCode)
             {
-                linkUrl = HttpClientHelper.ReadResponseString(linkUrlResponse);
+                linkUrl = await HttpClientHelper.ReadResponseStringAsync(linkUrlResponse);
             }
 
             using (_streamWriter = new StreamWriter(logFilePath))

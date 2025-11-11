@@ -24,7 +24,6 @@ namespace RecurringIntegrationsScheduler.Forms
         public MainForm()
         {
             InitializeComponent();
-            log4net.Config.XmlConfigurator.Configure();
         }
 
         private void RefreshGrid()

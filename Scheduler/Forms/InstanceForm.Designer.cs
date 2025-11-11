@@ -67,12 +67,12 @@ namespace RecurringIntegrationsScheduler.Forms
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
+            this.checkBox1.Enabled = false;
             this.checkBox1.Location = new System.Drawing.Point(164, 209);
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(339, 79);
+            this.checkBox1.Size = new System.Drawing.Size(461, 54);
             this.checkBox1.TabIndex = 10;
-            this.checkBox1.Text = "Use ADAL for authentication.\r\nRequired for on-premise instances \r\nworking with AD" +
-    " FS 2016";
+            this.checkBox1.Text = "ADAL authentication is no longer supported.\r\nExisting instances automatically use MSAL.";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // ButtonCancel

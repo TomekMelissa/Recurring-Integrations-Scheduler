@@ -154,11 +154,9 @@ namespace RecurringIntegrationsScheduler.Settings
         public string AadTenant { get; set; }
 
         /// <summary>
-        /// Gets or sets the use ADAL.
+        /// <summary>
+        /// Legacy flag for ADAL authentication (ignored in current versions).
         /// </summary>
-        /// <value>
-        /// The aad tenant.
-        /// </value>
         public bool UseADAL { get; set; }
     }
 

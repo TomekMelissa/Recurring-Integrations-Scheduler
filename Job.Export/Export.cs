@@ -66,7 +66,6 @@ namespace RecurringIntegrationsScheduler.Job
         {
             try
             {
-                log4net.Config.XmlConfigurator.Configure();
                 _context = context;
                 _settings.Initialize(context);
 
@@ -110,7 +109,7 @@ namespace RecurringIntegrationsScheduler.Job
                         Log.Error(ex.Message, ex);
                     }
                 }
-                if (context.Scheduler.SchedulerName != "Private")
+                if (!string.Equals(context.Scheduler.SchedulerName, RecurringIntegrationsScheduler.Common.Contracts.SchedulerConstants.PrivateSchedulerName, StringComparison.Ordinal))
                 {
                     throw new JobExecutionException(string.Format(Resources.Job_0_failed, _context.JobDetail.Key), ex, false);
                 }
@@ -141,7 +140,7 @@ namespace RecurringIntegrationsScheduler.Job
                 {
                     if (attempt > 0 && _settings.DelayBetweenStatusCheck > 0) //Only delay after first file and never after last.
                     {
-                        System.Threading.Thread.Sleep(TimeSpan.FromSeconds(_settings.DelayBetweenStatusCheck));
+                        await Task.Delay(TimeSpan.FromSeconds(_settings.DelayBetweenStatusCheck));
                     }
                     attempt++;
 
@@ -150,7 +149,7 @@ namespace RecurringIntegrationsScheduler.Job
                     {
                         throw new JobExecutionException($@"Job: {_settings.JobKey}. GetExecutionSummaryStatus request failed.");
                     }
-                    executionStatus = HttpClientHelper.ReadResponseString(responseGetExecutionSummaryStatus);
+                    executionStatus = await HttpClientHelper.ReadResponseStringAsync(responseGetExecutionSummaryStatus);
 
                     if (_settings.LogVerbose || Log.IsDebugEnabled)
                     {
@@ -167,11 +166,12 @@ namespace RecurringIntegrationsScheduler.Job
                 {
                     attempt = 0;//Reset for get url request attempts
                     HttpResponseMessage packageUrlResponse;
+                    string packageUrl;
                     do
                     {
                         if (attempt > 0 && _settings.DelayBetweenFiles > 0) //Only delay after first file and never after last.
                         {
-                            System.Threading.Thread.Sleep(TimeSpan.FromSeconds(_settings.DelayBetweenFiles));
+                            await Task.Delay(TimeSpan.FromSeconds(_settings.DelayBetweenFiles));
                         }
                         attempt++;
 
@@ -188,10 +188,11 @@ namespace RecurringIntegrationsScheduler.Job
                         {
                             throw new JobExecutionException(string.Format(Resources.Job_0_Request_to_download_exported_package_reached_1_attempts_Exiting, _context.JobDetail.Key, attempt));
                         }
+                        packageUrl = await HttpClientHelper.ReadResponseStringAsync(packageUrlResponse);
                     }
-                    while (string.IsNullOrEmpty(HttpClientHelper.ReadResponseString(packageUrlResponse)));
+                    while (string.IsNullOrEmpty(packageUrl));
 
-                    var packageUri = new Uri(HttpClientHelper.ReadResponseString(packageUrlResponse));             
+                    var packageUri = new Uri(packageUrl);             
                     var response = await _httpClientHelper.GetRequestAsync(packageUri, false);
                     if (!response.IsSuccessStatusCode)
                     {

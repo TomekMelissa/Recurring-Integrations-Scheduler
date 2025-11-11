@@ -84,7 +84,7 @@ namespace RecurringIntegrationsScheduler.Forms
             if (user != null)
             {
                 settings.UserName = user.Login;
-                settings.UserPassword = EncryptDecrypt.Decrypt(user.Password);
+                settings.SetUserPassword(EncryptDecrypt.Decrypt(user.Password));
             }
 
             var httpClientHelper = new HttpClientHelper(settings);

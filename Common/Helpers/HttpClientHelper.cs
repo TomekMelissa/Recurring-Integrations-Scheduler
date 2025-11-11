@@ -24,6 +24,8 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
     {
         private readonly Settings _settings;
         private readonly HttpClient _httpClient;
+        private readonly HttpClientHandler _httpClientHandler;
+        private readonly HttpRetryHandler _httpRetryHandler;
         private readonly AuthenticationHelper _authenticationHelper;
         private bool _disposed;
 
@@ -39,20 +41,19 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// <param name="jobSettings">Job settings</param>
         public HttpClientHelper(Settings jobSettings)
         {
-            log4net.Config.XmlConfigurator.Configure();
-
             _settings = jobSettings;
 
             //Use Tls1.2 as default transport layer
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-            var httpClientHandler = new HttpClientHandler {
+            _httpClientHandler = new HttpClientHandler {
                 AllowAutoRedirect = false,
                 UseCookies = false,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
             };
 
-            _httpClient = new HttpClient(new HttpRetryHandler(httpClientHandler, _settings))
+            _httpRetryHandler = new HttpRetryHandler(_httpClientHandler, _settings);
+            _httpClient = new HttpClient(_httpRetryHandler)
             {
                 Timeout = TimeSpan.FromMinutes(60) //Timeout for large uploads or downloads
             };
@@ -849,11 +850,27 @@ Response message: {response.Content}");
                     return aosUri; 
              } 
 
-        public static string ReadResponseString(HttpResponseMessage response)
+        public static async Task<string> ReadResponseStringAsync(HttpResponseMessage response)
         {
-            string result = response.Content.ReadAsStringAsync().Result;
-            JObject jsonResponse = (JObject)JsonConvert.DeserializeObject(result);
-            return jsonResponse["value"].ToString();
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            var payload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(payload))
+            {
+                throw new InvalidOperationException("Response content was empty.");
+            }
+
+            var jsonResponse = JsonConvert.DeserializeObject<JObject>(payload);
+            var valueNode = jsonResponse?["value"];
+            if (valueNode == null)
+            {
+                throw new InvalidOperationException("Expected 'value' property missing from response.");
+            }
+
+            return valueNode.ToString();
         }
 
         /// <summary>
@@ -876,6 +893,8 @@ Response message: {response.Content}");
             if (disposing)
             {
                 _httpClient?.Dispose();
+                _httpRetryHandler?.Dispose();
+                _httpClientHandler?.Dispose();
             }
         }
     }

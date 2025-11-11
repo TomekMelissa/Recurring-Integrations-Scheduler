@@ -76,7 +76,6 @@ namespace RecurringIntegrationsScheduler.Job
         {
             try
             {
-                log4net.Config.XmlConfigurator.Configure();
                 _context = context;
                 _settings.Initialize(context);
 
@@ -121,7 +120,7 @@ namespace RecurringIntegrationsScheduler.Job
                         Log.Error(ex.Message, ex);
                     }
                 }
-                if (context.Scheduler.SchedulerName != "Private")
+                if (!string.Equals(context.Scheduler.SchedulerName, RecurringIntegrationsScheduler.Common.Contracts.SchedulerConstants.PrivateSchedulerName, StringComparison.Ordinal))
                 {
                     throw new JobExecutionException(string.Format(Resources.Processing_monitor_job_0_failed, _context.JobDetail.Key), ex, false);
                 }
@@ -164,7 +163,7 @@ namespace RecurringIntegrationsScheduler.Job
             {
                 if (fileCount > 0 && _settings.StatusCheckInterval > 0) //Only delay after first file and never after last.
                 {
-                    System.Threading.Thread.Sleep(TimeSpan.FromSeconds(_settings.StatusCheckInterval));
+                    await Task.Delay(TimeSpan.FromSeconds(_settings.StatusCheckInterval));
                 }
                 fileCount++;
 

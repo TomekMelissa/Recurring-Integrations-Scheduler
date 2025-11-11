@@ -27,18 +27,24 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// </remarks>
         public static string Decrypt(string cipher)
         {
+            if (string.IsNullOrWhiteSpace(cipher))
+            {
+                throw new ArgumentException("Cipher text cannot be null or empty.", nameof(cipher));
+            }
+
             try
             {
-                //parse base64 string
                 var data = Convert.FromBase64String(cipher);
-
-                //decrypt data
-                var decrypted = ProtectedData.Unprotect(data, null, DataProtectionScope.LocalMachine);
+                var decrypted = ProtectedData.Unprotect(data, null, DataProtectionScope.CurrentUser);
                 return Encoding.Unicode.GetString(decrypted);
             }
-            catch
+            catch (FormatException ex)
             {
-                return string.Empty;
+                throw new InvalidOperationException("Failed to decrypt credentials. Stored value is not valid Base64.", ex);
+            }
+            catch (CryptographicException ex)
+            {
+                throw new InvalidOperationException("Failed to decrypt credentials. Re-enter the secret on this machine/user profile.", ex);
             }
         }
 
@@ -63,19 +69,9 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         public static string Encrypt(string plainText)
         {
             if (plainText == null) throw new ArgumentNullException(nameof(plainText));
-            try
-            {
-                //encrypt data
-                var data = Encoding.Unicode.GetBytes(plainText);
-                var encrypted = ProtectedData.Protect(data, null, DataProtectionScope.LocalMachine);
-
-                //return as base64 string
-                return Convert.ToBase64String(encrypted);
-            }
-            catch
-            {
-                return string.Empty;
-            }
+            var data = Encoding.Unicode.GetBytes(plainText);
+            var encrypted = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
+            return Convert.ToBase64String(encrypted);
         }
     }
 }

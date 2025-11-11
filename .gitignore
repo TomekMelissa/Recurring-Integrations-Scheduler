@@ -296,3 +296,6 @@ __pycache__/
 /Setup/Quartz.Plugins.dll
 /Setup/Quartz.Jobs.dll
 /Setup/Quartz.dll
+
+# Markdown files
+*.md

@@ -1,6 +1,7 @@
 ﻿/* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
+using System;
 using log4net;
 using Polly;
 using Quartz;
@@ -8,7 +9,6 @@ using RecurringIntegrationsScheduler.Common.Contracts;
 using RecurringIntegrationsScheduler.Common.Helpers;
 using RecurringIntegrationsScheduler.Common.JobSettings;
 using RecurringIntegrationsScheduler.Job.Properties;
-using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
@@ -74,7 +74,6 @@ namespace RecurringIntegrationsScheduler.Job
         {
             try
             {
-                log4net.Config.XmlConfigurator.Configure();
                 _context = context;
                 _settings.Initialize(context);
 
@@ -120,7 +119,7 @@ namespace RecurringIntegrationsScheduler.Job
                         Log.Error(ex.Message, ex);
                     }
                 }
-                if (context.Scheduler.SchedulerName != "Private")
+                if (!string.Equals(context.Scheduler.SchedulerName, RecurringIntegrationsScheduler.Common.Contracts.SchedulerConstants.PrivateSchedulerName, StringComparison.Ordinal))
                 {
                     throw new JobExecutionException(string.Format(Resources.Upload_job_0_failed, _context.JobDetail.Key), ex, false);
                 }
@@ -171,7 +170,7 @@ namespace RecurringIntegrationsScheduler.Job
                     {
                         if (fileCount > 0 && _settings.DelayBetweenFiles > 0) //Only delay after first file and never after last.
                         {
-                            System.Threading.Thread.Sleep(TimeSpan.FromSeconds(_settings.DelayBetweenFiles));
+                            await Task.Delay(TimeSpan.FromSeconds(_settings.DelayBetweenFiles));
                         }
                         fileCount++;
 

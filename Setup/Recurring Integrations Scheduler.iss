@@ -54,13 +54,11 @@ Source: "..\Output\Release\RecurringIntegrationsScheduler.Job.ExecutionMonitor.d
 ; References
 Source: "..\Output\Release\Microsoft.Extensions.Logging.Abstractions.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler
 Source: "..\Output\Release\Microsoft.Identity.Client.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler
-Source: "..\Output\Release\Microsoft.IdentityModel.Clients.ActiveDirectory.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler
 Source: "..\Output\Release\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler
 Source: "..\Output\Release\Polly.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler
 Source: "..\Output\Release\PortableSettingsProvider.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler
 Source: "..\Output\Release\System.Buffers.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler
 Source: "..\Output\Release\System.Diagnostics.DiagnosticSource.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler
-Source: "..\Output\Release\System.Linq.Dynamic.Core.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler
 Source: "..\Output\Release\System.Memory.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler
 Source: "..\Output\Release\System.Numerics.Vectors.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler
 Source: "..\Output\Release\System.Runtime.CompilerServices.Unsafe.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler

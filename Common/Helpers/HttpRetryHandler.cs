@@ -5,7 +5,9 @@ using log4net;
 using RecurringIntegrationsScheduler.Common.JobSettings;
 using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,6 +16,17 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
     public class HttpRetryHandler : DelegatingHandler
     {
         private int _retryAfter;
+        private static readonly HttpStatusCode TooManyRequestsStatusCode = (HttpStatusCode)429;
+        private static readonly HttpStatusCode[] TransientStatusCodes =
+        {
+            HttpStatusCode.RequestTimeout,
+            TooManyRequestsStatusCode,
+            HttpStatusCode.InternalServerError,
+            HttpStatusCode.BadGateway,
+            HttpStatusCode.ServiceUnavailable,
+            HttpStatusCode.GatewayTimeout
+        };
+        private static readonly RandomNumberGenerator JitterGenerator = RandomNumberGenerator.Create();
         private readonly Settings _settings;
         /// <summary>
         /// The log
@@ -25,7 +38,6 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         {
             _settings = jobSettings;
             _retryAfter = _settings.RetryDelay;
-            log4net.Config.XmlConfigurator.Configure();
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -33,35 +45,115 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
             CancellationToken cancellationToken)
         {
             HttpResponseMessage response = null;
-            for (int i = 0; i < _settings.RetryCount; i++)
+            for (int attempt = 0; attempt < _settings.RetryCount; attempt++)
             {
-                response = await base.SendAsync(request, cancellationToken);
-                if (response.IsSuccessStatusCode)
+                cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                }
+                catch (HttpRequestException ex) when (attempt < _settings.RetryCount - 1)
+                {
+                    Log.Warn($@"Job: {_settings.JobKey}. HttpRetryHandler encountered a transport error (attempt {attempt + 1}/{_settings.RetryCount}). Retrying...", ex);
+                    await DelayAsync(attempt, null, cancellationToken).ConfigureAwait(false);
+                    continue;
+                }
+                catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested && attempt < _settings.RetryCount - 1)
+                {
+                    Log.Warn($@"Job: {_settings.JobKey}. HttpRetryHandler detected a timeout (attempt {attempt + 1}/{_settings.RetryCount}). Retrying...");
+                    await DelayAsync(attempt, null, cancellationToken).ConfigureAwait(false);
+                    continue;
+                }
+
+                if (response?.IsSuccessStatusCode ?? false)
                 {
                     return response;
                 }
-                if ((int)response.StatusCode == 429)
-                {
 
-                    i--; //Explicit ask for retry. Try until successful
-                    if (response.Headers.Contains("Retry-After"))
-                    {
-                        _retryAfter = int.Parse(response.Headers.GetValues("Retry-After").FirstOrDefault());
-                        Log.Warn($@"Job: {_settings.JobKey}. HttpRetryHandler.Task is being called.
-ReqeuestUri: {request.RequestUri}
-Response Status Code: {response.StatusCode} 
-Priority-based throttling in action.
-Requested delay (in seconds) between next request: {_retryAfter}");
-                    }
-                }
-                if (_retryAfter > 0 && _settings.RetryCount > 1)
+                if (!ShouldRetry(response, attempt))
                 {
-                    Log.Warn($@"Job: {_settings.JobKey}. HttpRetryHandler.Task is being called.
-Delaying next request for {_retryAfter} seconds...");
-                    Thread.Sleep(TimeSpan.FromSeconds(_retryAfter));
+                    return response;
                 }
+
+                await DelayAsync(attempt, response, cancellationToken).ConfigureAwait(false);
             }
             return response;
+        }
+
+        private bool ShouldRetry(HttpResponseMessage response, int attempt)
+        {
+            if (response == null)
+            {
+                return false;
+            }
+
+            if (attempt >= _settings.RetryCount - 1)
+            {
+                return false;
+            }
+
+            if (TransientStatusCodes.Contains(response.StatusCode))
+            {
+                return true;
+            }
+
+            var statusCode = (int)response.StatusCode;
+            // Retry on custom throttling codes as well
+            return statusCode == 429 || statusCode == 599;
+        }
+
+        private async Task DelayAsync(int attempt, HttpResponseMessage response, CancellationToken cancellationToken)
+        {
+            var retryAfterSeconds = GetServerRetryAfterSeconds(response);
+            if (retryAfterSeconds <= 0)
+            {
+                var exponential = Math.Min(_settings.RetryDelay * Math.Pow(2, attempt), 60);
+                retryAfterSeconds = (int)Math.Max(exponential, _settings.RetryDelay);
+            }
+
+            var jitterMilliseconds = NextJitterMilliseconds();
+            var delay = TimeSpan.FromSeconds(retryAfterSeconds) + TimeSpan.FromMilliseconds(jitterMilliseconds);
+
+            Log.Warn($@"Job: {_settings.JobKey}. HttpRetryHandler delaying next request for {delay.TotalSeconds:F1} seconds (attempt {attempt + 1}/{_settings.RetryCount}).");
+            await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+        }
+
+        private int GetServerRetryAfterSeconds(HttpResponseMessage response)
+        {
+            if (response?.Headers?.RetryAfter == null)
+            {
+                return 0;
+            }
+
+            if (response.Headers.RetryAfter.Delta.HasValue)
+            {
+                return (int)Math.Max(response.Headers.RetryAfter.Delta.Value.TotalSeconds, 0);
+            }
+
+            if (response.Headers.RetryAfter.Date.HasValue)
+            {
+                var delta = response.Headers.RetryAfter.Date.Value - DateTimeOffset.UtcNow;
+                return (int)Math.Max(delta.TotalSeconds, 0);
+            }
+
+            if (response.Headers.Contains("Retry-After"))
+            {
+                var raw = response.Headers.GetValues("Retry-After").FirstOrDefault();
+                if (int.TryParse(raw, out int parsed))
+                {
+                    return Math.Max(parsed, 0);
+                }
+            }
+
+            return 0;
+        }
+
+        private static int NextJitterMilliseconds()
+        {
+            var buffer = new byte[4];
+            JitterGenerator.GetBytes(buffer);
+            var value = BitConverter.ToInt32(buffer, 0);
+            return Math.Abs(value % 250);
         }
     }
 

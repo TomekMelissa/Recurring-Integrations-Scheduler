@@ -2,6 +2,7 @@
    Licensed under the MIT License. */
 
 using System;
+using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using RecurringIntegrationsScheduler.Common.Contracts;
@@ -9,14 +10,16 @@ using RecurringIntegrationsScheduler.Common.Properties;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Linq;
 
 namespace RecurringIntegrationsScheduler.Common.Helpers
 {
     public static class FileOperationsHelper
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(FileOperationsHelper));
+
         /// <summary>
         /// Deletes file specified by file path
         /// </summary>
@@ -35,25 +38,33 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// </summary>
         /// <param name="filePath">File path</param>
         /// <returns>Stream</returns>
-        public static Stream Read(string filePath, FileShare fileShare = FileShare.ReadWrite)
+        public static Stream Read(string filePath, FileShare fileShare = FileShare.Read)
         {
-            if (File.Exists(filePath))
+            if (string.IsNullOrWhiteSpace(filePath))
             {
-                try
-                {
-                    return new FileStream(filePath,
-                        FileMode.Open,
-                        FileAccess.ReadWrite,
-                        fileShare,
-                        4096,
-                        true);
-                }
-                catch (IOException)
-                {                    
-                }
+                throw new ArgumentException("File path must be provided.", nameof(filePath));
             }
-            return null;
-         }
+
+            if (!File.Exists(filePath))
+            {
+                return null;
+            }
+
+            try
+            {
+                return new FileStream(filePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    fileShare,
+                    4096,
+                    useAsync: true);
+            }
+            catch (IOException ex)
+            {
+                Log.Warn($"Unable to open file '{filePath}'. The file may be locked by another process. {ex.Message}");
+                return null;
+            }
+        }
 
         /// <summary>
         /// Creates a file
@@ -63,13 +74,31 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// <returns>Boolean with operation result</returns>
         public static void Create(Stream sourceStream, string filePath)
         {
+            if (sourceStream == null)
+            {
+                throw new ArgumentNullException(nameof(sourceStream));
+            }
+
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentException("Target file path must be provided.", nameof(filePath));
+            }
+
+            if (!sourceStream.CanRead)
+            {
+                throw new ArgumentException("Source stream must be readable.", nameof(sourceStream));
+            }
+
             var targetDirectoryName = Path.GetDirectoryName(filePath);
             if (targetDirectoryName == null)
                 throw new DirectoryNotFoundException();
 
             Directory.CreateDirectory(targetDirectoryName);
-            using var fileStream = File.Create(filePath);
-            sourceStream.Seek(0, SeekOrigin.Begin);
+            using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+            if (sourceStream.CanSeek)
+            {
+                sourceStream.Seek(0, SeekOrigin.Begin);
+            }
             sourceStream.CopyTo(fileStream);
         }
 
@@ -88,28 +117,8 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
             bool reverse = false)
         {
             var dir = new DirectoryInfo(path);
-            var sortByProperty = string.Empty;
-            switch (sortBy)
-            {
-                case OrderByOptions.Created:
-                    sortByProperty = @"CreationTimeUtc";
-                    break;
-
-                case OrderByOptions.Modified:
-                    sortByProperty = @"LastWriteTimeUtc";
-                    break;
-
-                case OrderByOptions.Size:
-                    sortByProperty = @"Length";
-                    break;
-
-                case OrderByOptions.FileName:
-                    sortByProperty = @"FullName";
-                    break;
-            }
-
-            foreach (FileInfo fileName in dir.EnumerateFiles(searchPatterns, searchOption).AsQueryable().Sort(sortByProperty, reverse)
-            )
+            var files = dir.EnumerateFiles(searchPatterns, searchOption);
+            foreach (FileInfo fileName in SortFiles(files, sortBy, reverse))
             {
                 var dataMessage = new DataMessage
                 {
@@ -136,28 +145,8 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
             OrderByOptions sortBy = OrderByOptions.Created, bool reverse = false)
         {
             var dir = new DirectoryInfo(path);
-            var sortByProperty = string.Empty;
-            switch (sortBy)
-            {
-                case OrderByOptions.Created:
-                    sortByProperty = @"CreationTimeUtc";
-                    break;
-
-                case OrderByOptions.Modified:
-                    sortByProperty = @"LastWriteTimeUtc";
-                    break;
-
-                case OrderByOptions.Size:
-                    sortByProperty = @"Length";
-                    break;
-
-                case OrderByOptions.FileName:
-                    sortByProperty = @"FullName";
-                    break;
-            }
-
-            foreach (FileInfo fileName in dir.EnumerateFiles(searchPatterns, searchOption).AsQueryable().Sort(sortByProperty, reverse)
-            )
+            var files = dir.EnumerateFiles(searchPatterns, searchOption);
+            foreach (FileInfo fileName in SortFiles(files, sortBy, reverse))
             {
                 DataMessage dataMessage;
                 using (var file = File.OpenText(fileName.FullName))
@@ -194,30 +183,102 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// <returns>Boolean with operation result</returns>
         public static void UnzipPackage(string filePath, bool deletePackage, bool addTimestamp = false)
         {
-            if (File.Exists(filePath))
+            if (!File.Exists(filePath))
             {
-                using (var zip = ZipFile.OpenRead(filePath))
+                return;
+            }
+
+            var baseDirectory = Path.GetDirectoryName(filePath) ?? throw new InvalidOperationException("Unable to determine package directory.");
+            var normalizedBase = Path.GetFullPath(baseDirectory);
+
+            using (var zip = ZipFile.OpenRead(filePath))
+            {
+                var candidateEntries = zip.Entries
+                    .Where(entry => entry.Length > 0 && entry.FullName != "Manifest.xml" && entry.FullName != "PackageHeader.xml")
+                    .ToList();
+
+                EnsureSufficientDiskSpace(baseDirectory, candidateEntries);
+
+                foreach (var entry in candidateEntries)
                 {
-                    foreach (var entry in zip.Entries)
+                    var projectedPath = addTimestamp
+                        ? Path.Combine(baseDirectory, (Path.GetFileNameWithoutExtension(filePath) ?? throw new InvalidOperationException()) + "-" + entry.FullName)
+                        : Path.Combine(baseDirectory, entry.FullName);
+
+                    var fullDestination = Path.GetFullPath(projectedPath);
+                    if (!fullDestination.StartsWith(normalizedBase, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((entry.Length == 0) || (entry.FullName == "Manifest.xml") ||
-                            (entry.FullName == "PackageHeader.xml"))
-                            continue;
-
-                        string fileName;
-
-                        if (addTimestamp)
-                            fileName =
-                                Path.Combine(Path.GetDirectoryName(filePath) ?? throw new InvalidOperationException(),
-                                    Path.GetFileNameWithoutExtension(filePath) ?? throw new InvalidOperationException()) + "-" + entry.FullName;
-                        else
-                            fileName = Path.Combine(Path.GetDirectoryName(filePath) ?? throw new InvalidOperationException(), entry.FullName);
-
-                        entry.ExtractToFile(fileName, !addTimestamp);
+                        Log.Warn($"Skipping zip entry '{entry.FullName}' because it resolves outside '{normalizedBase}'.");
+                        continue;
                     }
+
+                    var destinationDirectory = Path.GetDirectoryName(fullDestination);
+                    if (!string.IsNullOrEmpty(destinationDirectory))
+                    {
+                        Directory.CreateDirectory(destinationDirectory);
+                    }
+
+                    entry.ExtractToFile(fullDestination, !addTimestamp);
                 }
-                if (deletePackage)
-                    File.Delete(filePath);
+            }
+
+            if (deletePackage)
+            {
+                File.Delete(filePath);
+            }
+        }
+
+        private static IEnumerable<FileInfo> SortFiles(IEnumerable<FileInfo> files, OrderByOptions sortBy, bool reverse)
+        {
+            IOrderedEnumerable<FileInfo> ordered = sortBy switch
+            {
+                OrderByOptions.Created => files.OrderBy(f => f.CreationTimeUtc),
+                OrderByOptions.Modified => files.OrderBy(f => f.LastWriteTimeUtc),
+                OrderByOptions.Size => files.OrderBy(f => f.Length),
+                OrderByOptions.FileName => files.OrderBy(f => f.FullName),
+                _ => files.OrderBy(f => f.FullName)
+            };
+
+            return reverse ? ordered.Reverse() : ordered;
+        }
+
+        private static void EnsureSufficientDiskSpace(string baseDirectory, IReadOnlyCollection<ZipArchiveEntry> entries)
+        {
+            if (entries == null || entries.Count == 0)
+            {
+                return;
+            }
+
+            var totalPayloadSize = entries.Sum(entry => entry.Length);
+            if (totalPayloadSize <= 0)
+            {
+                return;
+            }
+
+            var root = Path.GetPathRoot(baseDirectory);
+            if (string.IsNullOrEmpty(root))
+            {
+                return;
+            }
+
+            try
+            {
+                var driveInfo = new DriveInfo(root);
+                var requiredSpace = (long)Math.Min(long.MaxValue, totalPayloadSize * 1.2);
+                if (driveInfo.AvailableFreeSpace < requiredSpace)
+                {
+                    var message = $"Insufficient disk space to extract archive. Required: {requiredSpace:N0} bytes, available: {driveInfo.AvailableFreeSpace:N0} bytes.";
+                    Log.Error(message);
+                    throw new IOException(message);
+                }
+            }
+            catch (IOException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Log.Warn($"Unable to validate disk space before extraction: {ex.Message}");
             }
         }
 

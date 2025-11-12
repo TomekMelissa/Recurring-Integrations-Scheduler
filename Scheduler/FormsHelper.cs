@@ -1,4 +1,5 @@
 ﻿using Quartz;
+using RecurringIntegrationsScheduler.Controls;
 using RecurringIntegrationsScheduler.Properties;
 using System;
 using System.Linq;
@@ -60,6 +61,22 @@ namespace RecurringIntegrationsScheduler
             {
                 TrimTextBoxes(c);
             }
+        }
+
+        public static SftpSettingsControl AddSftpTab(TabControl tabControl, SftpMode mode, string tabTitle = "SFTP")
+        {
+            if (tabControl == null)
+            {
+                throw new ArgumentNullException(nameof(tabControl));
+            }
+
+            var control = new SftpSettingsControl();
+            control.SetMode(mode);
+            control.Dock = DockStyle.Fill;
+            var tabPage = new TabPage(tabTitle);
+            tabPage.Controls.Add(control);
+            tabControl.TabPages.Add(tabPage);
+            return control;
         }
     }
 }

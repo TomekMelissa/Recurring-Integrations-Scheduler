@@ -5,6 +5,8 @@ using Quartz;
 using Quartz.Impl.Triggers;
 using Quartz.Util;
 using RecurringIntegrationsScheduler.Common.Contracts;
+using RecurringIntegrationsScheduler.Common.Helpers;
+using RecurringIntegrationsScheduler.Controls;
 using RecurringIntegrationsScheduler.Properties;
 using RecurringIntegrationsScheduler.Settings;
 using System;
@@ -21,10 +23,12 @@ namespace RecurringIntegrationsScheduler.Forms
     public partial class ImportJobV3 : Form
     {
         private const int CpNocloseButton = 0x200;
+        private readonly SftpSettingsControl _inboundSftpControl;
 
         public ImportJobV3()
         {
             InitializeComponent();
+            _inboundSftpControl = FormsHelper.AddSftpTab(jobTabControl, SftpMode.Inbound);
         }
 
         public bool Cancelled { get; private set; }
@@ -224,6 +228,8 @@ namespace RecurringIntegrationsScheduler.Forms
 
                 verboseLoggingCheckBox.Checked = ImportJobDetail.JobDataMap.GetBooleanValue(SettingsConstants.LogVerbose);
 
+                LoadInboundSftpSettings(ImportJobDetail.JobDataMap);
+
                 Properties.Settings.Default.Save();
             }
             if ((ExecutionJobDetail != null) && (ExecutionTrigger != null))
@@ -340,6 +346,9 @@ namespace RecurringIntegrationsScheduler.Forms
                 map.Add(SettingsConstants.UserName, user.Login);
                 map.Add(SettingsConstants.UserPassword, user.Password);
             }
+
+            ApplyInboundSftpSettings(map);
+
             return map;
         }
 
@@ -385,6 +394,63 @@ namespace RecurringIntegrationsScheduler.Forms
                 map.Add(SettingsConstants.UserPassword, user.Password);
             }
             return map;
+        }
+
+        private void LoadInboundSftpSettings(Quartz.JobDataMap map)
+        {
+            if (_inboundSftpControl == null || map == null)
+            {
+                return;
+            }
+
+            _inboundSftpControl.SftpEnabled = map.GetBooleanValue(SettingsConstants.UseSftpInbound);
+            _inboundSftpControl.Host = map.GetString(SettingsConstants.SftpInboundHost);
+            var port = map.GetInt(SettingsConstants.SftpInboundPort);
+            if (port > 0)
+            {
+                _inboundSftpControl.Port = port;
+            }
+            _inboundSftpControl.Username = map.GetString(SettingsConstants.SftpInboundUsername);
+            _inboundSftpControl.Password = DecryptOrEmpty(map.GetString(SettingsConstants.SftpInboundPassword));
+            _inboundSftpControl.UsePrivateKey = map.GetBooleanValue(SettingsConstants.SftpInboundUseKey);
+            _inboundSftpControl.PrivateKeyPath = map.GetString(SettingsConstants.SftpInboundKeyPath);
+            _inboundSftpControl.PrivateKeyPassphrase = DecryptOrEmpty(map.GetString(SettingsConstants.SftpInboundKeyPassphrase));
+            _inboundSftpControl.RemoteFolder = map.GetString(SettingsConstants.SftpInboundRemoteFolder);
+            _inboundSftpControl.FileMask = map.GetString(SettingsConstants.SftpInboundFileMask) ?? "*.*";
+        }
+
+        private void ApplyInboundSftpSettings(JobDataMap map)
+        {
+            if (_inboundSftpControl == null)
+            {
+                return;
+            }
+
+            map.Add(SettingsConstants.UseSftpInbound, _inboundSftpControl.SftpEnabled);
+            if (!_inboundSftpControl.SftpEnabled)
+            {
+                return;
+            }
+
+            map.Add(SettingsConstants.SftpInboundHost, (_inboundSftpControl.Host ?? string.Empty).Trim());
+            map.Add(SettingsConstants.SftpInboundPort, _inboundSftpControl.Port);
+            map.Add(SettingsConstants.SftpInboundUsername, (_inboundSftpControl.Username ?? string.Empty).Trim());
+            map.Add(SettingsConstants.SftpInboundPassword, EncryptOrEmpty(_inboundSftpControl.Password));
+            map.Add(SettingsConstants.SftpInboundUseKey, _inboundSftpControl.UsePrivateKey);
+            map.Add(SettingsConstants.SftpInboundKeyPath, (_inboundSftpControl.PrivateKeyPath ?? string.Empty).Trim());
+            map.Add(SettingsConstants.SftpInboundKeyPassphrase, EncryptOrEmpty(_inboundSftpControl.PrivateKeyPassphrase));
+            map.Add(SettingsConstants.SftpInboundRemoteFolder, (_inboundSftpControl.RemoteFolder ?? string.Empty).Trim());
+            map.Add(SettingsConstants.SftpInboundFileMask, string.IsNullOrWhiteSpace(_inboundSftpControl.FileMask) ? "*.*" : _inboundSftpControl.FileMask);
+        }
+
+        private static string EncryptOrEmpty(string secret)
+        {
+            return string.IsNullOrWhiteSpace(secret) ? string.Empty : EncryptDecrypt.Encrypt(secret);
+        }
+
+        private static string DecryptOrEmpty(string secret)
+        {
+            return string.IsNullOrWhiteSpace(secret) ? string.Empty : EncryptDecrypt.Decrypt(secret);
         }
 
         private ITrigger GetImportTrigger(IJobDetail jobDetail)

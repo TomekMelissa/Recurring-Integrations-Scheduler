@@ -1255,6 +1255,7 @@ namespace RecurringIntegrationsScheduler.Forms
             // 
             // fileSelectionGroupBox
             // 
+
             this.fileSelectionGroupBox.Controls.Add(this.inputFilesArePackagesCheckBox);
             this.fileSelectionGroupBox.Controls.Add(this.packageTemplateLabel);
             this.fileSelectionGroupBox.Controls.Add(this.packageTemplateTextBox);
@@ -1265,7 +1266,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.fileSelectionGroupBox.Controls.Add(this.orderByComboBox);
             this.fileSelectionGroupBox.Controls.Add(this.orderLabel);
             this.fileSelectionGroupBox.Controls.Add(this.orderByPanel);
-            this.fileSelectionGroupBox.Location = new System.Drawing.Point(470, 7);
+            this.fileSelectionGroupBox.Location = new System.Drawing.Point(3, 288);
             this.fileSelectionGroupBox.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.fileSelectionGroupBox.Name = "fileSelectionGroupBox";
             this.fileSelectionGroupBox.Padding = new System.Windows.Forms.Padding(4, 6, 4, 6);
@@ -1407,13 +1408,16 @@ namespace RecurringIntegrationsScheduler.Forms
             // 
             // importDetailsGroupBox
             // 
+            this.importDetailsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+
             this.importDetailsGroupBox.Controls.Add(this.dataProjectLabel);
             this.importDetailsGroupBox.Controls.Add(this.dataProject);
             this.importDetailsGroupBox.Controls.Add(this.overwriteDataProjectCheckBox);
             this.importDetailsGroupBox.Controls.Add(this.executeImportCheckBox);
             this.importDetailsGroupBox.Controls.Add(this.delayBetweenFilesLabel);
             this.importDetailsGroupBox.Controls.Add(this.delayBetweenFilesNumericUpDown);
-            this.importDetailsGroupBox.Location = new System.Drawing.Point(8, 7);
+            this.importDetailsGroupBox.Location = new System.Drawing.Point(3, 3);
             this.importDetailsGroupBox.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.importDetailsGroupBox.Name = "importDetailsGroupBox";
             this.importDetailsGroupBox.Padding = new System.Windows.Forms.Padding(4, 6, 4, 6);
@@ -1687,9 +1691,9 @@ namespace RecurringIntegrationsScheduler.Forms
             // importJobDetailsTabPage
             // 
             this.importJobDetailsTabPage.BackColor = System.Drawing.SystemColors.Control;
-            this.importJobDetailsTabPage.Controls.Add(this.importDetailsGroupBox);
-            this.importJobDetailsTabPage.Controls.Add(this.fileSelectionGroupBox);
             this.importJobDetailsTabPage.Controls.Add(this.targetCompanyGroupBox);
+            this.importJobDetailsTabPage.Controls.Add(this.fileSelectionGroupBox);
+            this.importJobDetailsTabPage.Controls.Add(this.importDetailsGroupBox);
             this.importJobDetailsTabPage.Location = new System.Drawing.Point(8, 39);
             this.importJobDetailsTabPage.Margin = new System.Windows.Forms.Padding(4);
             this.importJobDetailsTabPage.Name = "importJobDetailsTabPage";
@@ -1698,6 +1702,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.importJobDetailsTabPage.TabIndex = 0;
             this.importJobDetailsTabPage.Text = "Import job details";
             // 
+            // targetCompanyGroupBox
             // targetCompanyGroupBox
             // 
             this.targetCompanyGroupBox.Controls.Add(this.legalEntityLabel);

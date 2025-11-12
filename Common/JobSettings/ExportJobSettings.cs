@@ -68,6 +68,28 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
 
             DeletePackage = dataMap.GetBooleanValue(SettingsConstants.DeletePackage);
 
+            UseSftpOutbound = dataMap.GetBooleanValue(SettingsConstants.UseSftpOutbound);
+            if (UseSftpOutbound)
+            {
+                OutboundSftpConfiguration = ReadSftpConfiguration(
+                    dataMap,
+                    SettingsConstants.SftpOutboundHost,
+                    SettingsConstants.SftpOutboundPort,
+                    SettingsConstants.SftpOutboundUsername,
+                    SettingsConstants.SftpOutboundPassword,
+                    SettingsConstants.SftpOutboundUseKey,
+                    SettingsConstants.SftpOutboundKeyPath,
+                    SettingsConstants.SftpOutboundKeyPassphrase,
+                    SettingsConstants.SftpOutboundRemoteFolder,
+                    SettingsConstants.SftpOutboundFileMask);
+
+                if (OutboundSftpConfiguration == null || !OutboundSftpConfiguration.IsConfigured)
+                {
+                    throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture,
+                        "Job {0}: SFTP outbound configuration is incomplete.", context?.JobDetail?.Key));
+                }
+            }
+
             DataProject = dataMap.GetString(SettingsConstants.DataProject);
 
             if (string.IsNullOrEmpty(DataProject))
@@ -150,6 +172,10 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
         /// Delay between status checks.
         /// </value>
         public int DelayBetweenStatusCheck { get; private set; }
+
+        public bool UseSftpOutbound { get; private set; }
+
+        public SftpConfiguration OutboundSftpConfiguration { get; private set; }
 
         #endregion
     }

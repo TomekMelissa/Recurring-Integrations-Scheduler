@@ -140,6 +140,8 @@ namespace RecurringIntegrationsScheduler.Job
         {
             InputQueue = new ConcurrentQueue<DataMessage>();
 
+            DownloadFilesFromSftp();
+
             foreach (
                 var dataMessage in FileOperationsHelper.GetFiles(MessageStatus.Input, _settings.InputDir, _settings.SearchPattern, SearchOption.AllDirectories, _settings.OrderBy, _settings.ReverseOrder))
             {
@@ -154,6 +156,34 @@ namespace RecurringIntegrationsScheduler.Job
             {
                 Log.InfoFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Found_1_file_s_in_input_folder, _context.JobDetail.Key, InputQueue.Count));
                 await ProcessInputQueue();
+            }
+        }
+
+        private void DownloadFilesFromSftp()
+        {
+            if (!_settings.UseSftpInbound || _settings.InboundSftpConfiguration == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var downloaded = SftpTransferHelper.DownloadFiles(_settings.InboundSftpConfiguration, _settings.InputDir, Log);
+                if (downloaded.Count > 0)
+                {
+                    Log.InfoFormat(CultureInfo.InvariantCulture,
+                        "Job {0}: Downloaded {1} file(s) from SFTP to input folder.",
+                        _context.JobDetail.Key,
+                        downloaded.Count);
+                }
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture,
+                    "Job {0}: Failed to download files from SFTP.",
+                    _context.JobDetail.Key);
+                Log.Error(message, ex);
+                throw new JobExecutionException(message, ex, false);
             }
         }
 

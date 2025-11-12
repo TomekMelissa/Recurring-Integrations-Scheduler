@@ -123,6 +123,28 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
             ReverseOrder = dataMap.GetBooleanValue(SettingsConstants.ReverseOrder);
 
             UploadInOrder = dataMap.GetBooleanValue(SettingsConstants.UploadInOrder);
+
+            UseSftpInbound = dataMap.GetBooleanValue(SettingsConstants.UseSftpInbound);
+            if (UseSftpInbound)
+            {
+                InboundSftpConfiguration = ReadSftpConfiguration(
+                    dataMap,
+                    SettingsConstants.SftpInboundHost,
+                    SettingsConstants.SftpInboundPort,
+                    SettingsConstants.SftpInboundUsername,
+                    SettingsConstants.SftpInboundPassword,
+                    SettingsConstants.SftpInboundUseKey,
+                    SettingsConstants.SftpInboundKeyPath,
+                    SettingsConstants.SftpInboundKeyPassphrase,
+                    SettingsConstants.SftpInboundRemoteFolder,
+                    SettingsConstants.SftpInboundFileMask);
+
+                if (InboundSftpConfiguration == null || !InboundSftpConfiguration.IsConfigured)
+                {
+                    throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture,
+                        "Job {0}: SFTP inbound configuration is incomplete.", context?.JobDetail?.Key));
+                }
+            }
         }
 
         #region Members
@@ -198,6 +220,10 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
         /// <c>true</c> if [processing job present]; otherwise, <c>false</c>.
         /// </value>
         public bool ProcessingJobPresent { get; private set; }
+
+        public bool UseSftpInbound { get; private set; }
+
+        public SftpConfiguration InboundSftpConfiguration { get; private set; }
 
         /// <summary>
         /// Gets the search pattern.

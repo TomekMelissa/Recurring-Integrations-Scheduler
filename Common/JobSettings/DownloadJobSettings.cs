@@ -76,6 +76,28 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
             AddTimestamp = dataMap.GetBooleanValue(SettingsConstants.AddTimestamp);
 
             DeletePackage = dataMap.GetBooleanValue(SettingsConstants.DeletePackage);
+
+            UseSftpOutbound = dataMap.GetBooleanValue(SettingsConstants.UseSftpOutbound);
+            if (UseSftpOutbound)
+            {
+                OutboundSftpConfiguration = ReadSftpConfiguration(
+                    dataMap,
+                    SettingsConstants.SftpOutboundHost,
+                    SettingsConstants.SftpOutboundPort,
+                    SettingsConstants.SftpOutboundUsername,
+                    SettingsConstants.SftpOutboundPassword,
+                    SettingsConstants.SftpOutboundUseKey,
+                    SettingsConstants.SftpOutboundKeyPath,
+                    SettingsConstants.SftpOutboundKeyPassphrase,
+                    SettingsConstants.SftpOutboundRemoteFolder,
+                    SettingsConstants.SftpOutboundFileMask);
+
+                if (OutboundSftpConfiguration == null || !OutboundSftpConfiguration.IsConfigured)
+                {
+                    throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture,
+                        "Job {0}: SFTP outbound configuration is incomplete.", context?.JobDetail?.Key));
+                }
+            }
         }
 
         #region Members
@@ -127,6 +149,10 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
         ///   <c>true</c> if [delete package]; otherwise, <c>false</c>.
         /// </value>
         public bool DeletePackage { get; private set; }
+
+        public bool UseSftpOutbound { get; private set; }
+
+        public SftpConfiguration OutboundSftpConfiguration { get; private set; }
 
         #endregion
     }

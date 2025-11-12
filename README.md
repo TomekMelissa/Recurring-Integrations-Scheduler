@@ -16,6 +16,10 @@ Single Recurring Integrations Scheduler service can work with multiple D365FO in
 Recurring Integrations Scheduler App is a win32 application that can be used as a configuration front-end for Recurring Integrations Scheduler service or as a completely independent, interactive application used to upload or download files to and from Dynamics 365 Finance or SCM without Recurring Integrations Scheduler Service.
 It is possible thanks to internal, private scheduler embedded in Recurring Integrations Scheduler App that works exactly the same way as the Scheduler Service does with one difference - it will stop working once the App is closed.
 
+## SFTP Integration
+
+Upload and Import jobs can now pull source files from an SFTP drop before processing, while Download and Export jobs can push their output to an SFTP target once D365 processing succeeds. Each job exposes an **SFTP** tab in the Scheduler UI where you can provide host, port, username, and either a password or key file plus the remote folder and file mask. Secrets are encrypted when saved to the job definition. Inbound transfers delete the remote blob after a successful download; outbound transfers move the local artifact into an `Uploaded` subfolder after it lands on SFTP so you can audit what was shipped.
+
 ## Installation and configuration
 
 Please check https://github.com/Microsoft/Recurring-Integrations-Scheduler/wiki

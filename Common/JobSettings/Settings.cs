@@ -424,6 +424,50 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
 
         #endregion
 
+        protected static string DecryptSecret(string encrypted)
+        {
+            return string.IsNullOrWhiteSpace(encrypted) ? null : EncryptDecrypt.Decrypt(encrypted);
+        }
+
+        protected SftpConfiguration ReadSftpConfiguration(
+            JobDataMap dataMap,
+            string hostKey,
+            string portKey,
+            string usernameKey,
+            string passwordKey,
+            string useKeyKey,
+            string keyPathKey,
+            string keyPassphraseKey,
+            string remoteFolderKey,
+            string fileMaskKey)
+        {
+            var host = dataMap.GetString(hostKey);
+            if (string.IsNullOrWhiteSpace(host))
+            {
+                return null;
+            }
+
+            var port = dataMap.GetInt(portKey);
+            var username = dataMap.GetString(usernameKey);
+            var password = DecryptSecret(dataMap.GetString(passwordKey));
+            var useKey = dataMap.GetBooleanValue(useKeyKey);
+            var keyPath = dataMap.GetString(keyPathKey);
+            var keyPassphrase = DecryptSecret(dataMap.GetString(keyPassphraseKey));
+            var remoteFolder = dataMap.GetString(remoteFolderKey);
+            var fileMask = dataMap.GetString(fileMaskKey);
+
+            return new SftpConfiguration(
+                host,
+                port,
+                username,
+                password,
+                useKey,
+                keyPath,
+                keyPassphrase,
+                remoteFolder,
+                fileMask);
+        }
+
         /// <summary>
         /// Assigns a decrypted password to the SecureString holder.
         /// </summary>

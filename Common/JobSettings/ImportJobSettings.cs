@@ -151,6 +151,28 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
             LegalEntityTokenPosition = dataMap.GetInt(SettingsConstants.LegalEntityTokenPosition);
 
             InputFilesArePackages = dataMap.GetBooleanValue(SettingsConstants.InputFilesArePackages);
+
+            UseSftpInbound = dataMap.GetBooleanValue(SettingsConstants.UseSftpInbound);
+            if (UseSftpInbound)
+            {
+                InboundSftpConfiguration = ReadSftpConfiguration(
+                    dataMap,
+                    SettingsConstants.SftpInboundHost,
+                    SettingsConstants.SftpInboundPort,
+                    SettingsConstants.SftpInboundUsername,
+                    SettingsConstants.SftpInboundPassword,
+                    SettingsConstants.SftpInboundUseKey,
+                    SettingsConstants.SftpInboundKeyPath,
+                    SettingsConstants.SftpInboundKeyPassphrase,
+                    SettingsConstants.SftpInboundRemoteFolder,
+                    SettingsConstants.SftpInboundFileMask);
+
+                if (InboundSftpConfiguration == null || !InboundSftpConfiguration.IsConfigured)
+                {
+                    throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture,
+                        "Job {0}: SFTP inbound configuration is incomplete.", context?.JobDetail?.Key));
+                }
+            }
         }
 
         #region Members
@@ -306,6 +328,10 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
         /// Input files are packages.
         /// </value>
         public bool InputFilesArePackages { get; private set; }
+
+        public bool UseSftpInbound { get; private set; }
+
+        public SftpConfiguration InboundSftpConfiguration { get; private set; }
 
         #endregion
     }

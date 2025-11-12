@@ -5,6 +5,8 @@ using Quartz;
 using Quartz.Impl.Triggers;
 using Quartz.Util;
 using RecurringIntegrationsScheduler.Common.Contracts;
+using RecurringIntegrationsScheduler.Common.Helpers;
+using RecurringIntegrationsScheduler.Controls;
 using RecurringIntegrationsScheduler.Properties;
 using RecurringIntegrationsScheduler.Settings;
 using System;
@@ -20,10 +22,12 @@ namespace RecurringIntegrationsScheduler.Forms
     public partial class DownloadJobV3 : Form
     {
         private const int CpNocloseButton = 0x200;
+        private readonly SftpSettingsControl _outboundSftpControl;
 
         public DownloadJobV3()
         {
             InitializeComponent();
+            _outboundSftpControl = FormsHelper.AddSftpTab(jobTabControl, SftpMode.Outbound);
         }
 
         public bool Cancelled { get; private set; }
@@ -200,6 +204,8 @@ namespace RecurringIntegrationsScheduler.Forms
 
                 verboseLoggingCheckBox.Checked = JobDetail.JobDataMap.GetBooleanValue(SettingsConstants.LogVerbose);
 
+                LoadOutboundSftpSettings(JobDetail.JobDataMap);
+
                 Properties.Settings.Default.Save();
             }
             FormsHelper.SetDropDownsWidth(this);
@@ -254,6 +260,9 @@ namespace RecurringIntegrationsScheduler.Forms
                 map.Add(SettingsConstants.UserName, user.Login);
                 map.Add(SettingsConstants.UserPassword, user.Password);
             }
+
+            ApplyOutboundSftpSettings(map);
+
             return map;
         }
 
@@ -457,6 +466,63 @@ namespace RecurringIntegrationsScheduler.Forms
             {
                 errorsFolder.Text = Path.Combine(downloadFolder.Text, Properties.Settings.Default.DownloadErrorsFolder);
             }
+        }
+
+        private void LoadOutboundSftpSettings(Quartz.JobDataMap map)
+        {
+            if (_outboundSftpControl == null || map == null)
+            {
+                return;
+            }
+
+            _outboundSftpControl.SftpEnabled = map.GetBooleanValue(SettingsConstants.UseSftpOutbound);
+            _outboundSftpControl.Host = map.GetString(SettingsConstants.SftpOutboundHost);
+            var port = map.GetInt(SettingsConstants.SftpOutboundPort);
+            if (port > 0)
+            {
+                _outboundSftpControl.Port = port;
+            }
+            _outboundSftpControl.Username = map.GetString(SettingsConstants.SftpOutboundUsername);
+            _outboundSftpControl.Password = DecryptOrEmpty(map.GetString(SettingsConstants.SftpOutboundPassword));
+            _outboundSftpControl.UsePrivateKey = map.GetBooleanValue(SettingsConstants.SftpOutboundUseKey);
+            _outboundSftpControl.PrivateKeyPath = map.GetString(SettingsConstants.SftpOutboundKeyPath);
+            _outboundSftpControl.PrivateKeyPassphrase = DecryptOrEmpty(map.GetString(SettingsConstants.SftpOutboundKeyPassphrase));
+            _outboundSftpControl.RemoteFolder = map.GetString(SettingsConstants.SftpOutboundRemoteFolder);
+            _outboundSftpControl.FileMask = map.GetString(SettingsConstants.SftpOutboundFileMask) ?? "*.*";
+        }
+
+        private void ApplyOutboundSftpSettings(JobDataMap map)
+        {
+            if (_outboundSftpControl == null)
+            {
+                return;
+            }
+
+            map.Add(SettingsConstants.UseSftpOutbound, _outboundSftpControl.SftpEnabled);
+            if (!_outboundSftpControl.SftpEnabled)
+            {
+                return;
+            }
+
+            map.Add(SettingsConstants.SftpOutboundHost, (_outboundSftpControl.Host ?? string.Empty).Trim());
+            map.Add(SettingsConstants.SftpOutboundPort, _outboundSftpControl.Port);
+            map.Add(SettingsConstants.SftpOutboundUsername, (_outboundSftpControl.Username ?? string.Empty).Trim());
+            map.Add(SettingsConstants.SftpOutboundPassword, EncryptOrEmpty(_outboundSftpControl.Password));
+            map.Add(SettingsConstants.SftpOutboundUseKey, _outboundSftpControl.UsePrivateKey);
+            map.Add(SettingsConstants.SftpOutboundKeyPath, (_outboundSftpControl.PrivateKeyPath ?? string.Empty).Trim());
+            map.Add(SettingsConstants.SftpOutboundKeyPassphrase, EncryptOrEmpty(_outboundSftpControl.PrivateKeyPassphrase));
+            map.Add(SettingsConstants.SftpOutboundRemoteFolder, (_outboundSftpControl.RemoteFolder ?? string.Empty).Trim());
+            map.Add(SettingsConstants.SftpOutboundFileMask, string.IsNullOrWhiteSpace(_outboundSftpControl.FileMask) ? "*.*" : _outboundSftpControl.FileMask);
+        }
+
+        private static string EncryptOrEmpty(string secret)
+        {
+            return string.IsNullOrWhiteSpace(secret) ? string.Empty : EncryptDecrypt.Encrypt(secret);
+        }
+
+        private static string DecryptOrEmpty(string secret)
+        {
+            return string.IsNullOrWhiteSpace(secret) ? string.Empty : EncryptDecrypt.Decrypt(secret);
         }
 
         #endregion

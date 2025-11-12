@@ -213,6 +213,8 @@ namespace RecurringIntegrationsScheduler.Job
                     {
                         _retryPolicyForIo.Execute(() => FileOperationsHelper.UnzipPackage(dataMessage.FullPath, _settings.DeletePackage, _settings.AddTimestamp));
                     }
+
+                    UploadFileToSftp(dataMessage.FullPath);
                 }
                 else if (executionStatus == "Unknown" || executionStatus == "Failed" || executionStatus == "Canceled")
                 {
@@ -223,6 +225,46 @@ namespace RecurringIntegrationsScheduler.Job
                     Log.Error(string.Format(Resources.Job_0_Execution_status_1_Execution_Id_2, _context.JobDetail.Key, executionStatus, executionId));
                 }
             }
+        }
+
+        private void UploadFileToSftp(string filePath)
+        {
+            if (!_settings.UseSftpOutbound || _settings.OutboundSftpConfiguration == null)
+            {
+                return;
+            }
+
+            if (!File.Exists(filePath))
+            {
+                Log.WarnFormat(CultureInfo.InvariantCulture,
+                    "Job {0}: Local file '{1}' was not found for SFTP upload.",
+                    _context.JobDetail.Key,
+                    filePath);
+                return;
+            }
+
+            try
+            {
+                SftpTransferHelper.UploadFile(_settings.OutboundSftpConfiguration, filePath, Log);
+                MoveToUploadedFolder(filePath);
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture,
+                    "Job {0}: SFTP upload failed for file '{1}'.",
+                    _context.JobDetail.Key,
+                    filePath);
+                Log.Error(message, ex);
+                throw new JobExecutionException(message, ex, false);
+            }
+        }
+
+        private void MoveToUploadedFolder(string filePath)
+        {
+            var uploadedDir = Path.Combine(_settings.DownloadSuccessDir, "Uploaded");
+            Directory.CreateDirectory(uploadedDir);
+            var targetPath = Path.Combine(uploadedDir, Path.GetFileName(filePath));
+            _retryPolicyForIo.Execute(() => FileOperationsHelper.Move(filePath, targetPath));
         }
     }
 }

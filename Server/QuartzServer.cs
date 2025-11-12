@@ -74,7 +74,7 @@ namespace RecurringIntegrationsScheduler.Server
 		{
 	        try
 	        {
-	            scheduler.Start();
+	            scheduler.Start().GetAwaiter().GetResult();
 	        }
 	        catch (Exception ex)
 	        {
@@ -92,7 +92,7 @@ namespace RecurringIntegrationsScheduler.Server
 		{
             try
             {
-                scheduler.Shutdown(true);
+                scheduler.Shutdown(waitForJobsToComplete: true).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
@@ -116,7 +116,7 @@ namespace RecurringIntegrationsScheduler.Server
         /// </summary>
 	    public virtual void Pause()
 	    {
-	        scheduler.PauseAll();
+	        scheduler.PauseAll().GetAwaiter().GetResult();
 	    }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace RecurringIntegrationsScheduler.Server
         /// </summary>
 	    public void Resume()
 	    {
-	        scheduler.ResumeAll();
+	        scheduler.ResumeAll().GetAwaiter().GetResult();
 	    }
 
 	    /// <summary>

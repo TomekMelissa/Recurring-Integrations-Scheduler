@@ -139,18 +139,21 @@ namespace RecurringIntegrationsScheduler.Job
         private async Task Process()
         {
             EnqueuedJobs = new ConcurrentQueue<DataMessage>();
-            foreach (var dataMessage in FileOperationsHelper.GetStatusFiles(MessageStatus.InProcess, _settings.UploadSuccessDir, "*" + _settings.StatusFileExtension))
+            using (_httpClientHelper = new HttpClientHelper(_settings))
             {
-                if (_settings.LogVerbose || Log.IsDebugEnabled)
+                foreach (var dataMessage in FileOperationsHelper.GetStatusFiles(MessageStatus.InProcess, _settings.UploadSuccessDir, "*" + _settings.StatusFileExtension))
                 {
-                    Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_File_1_found_in_processing_location_and_added_to_queue_for_status_check, _context.JobDetail.Key, dataMessage.FullPath.Replace(@"{", @"{{").Replace(@"}", @"}}")));
+                    if (_settings.LogVerbose || Log.IsDebugEnabled)
+                    {
+                        Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_File_1_found_in_processing_location_and_added_to_queue_for_status_check, _context.JobDetail.Key, dataMessage.FullPath.Replace(@"{", @"{{").Replace(@"}", @"}}")));
+                    }
+                    EnqueuedJobs.Enqueue(dataMessage);
                 }
-                EnqueuedJobs.Enqueue(dataMessage);
-            }
 
-            if (!EnqueuedJobs.IsEmpty)
-            {
-                await ProcessEnqueuedQueue();
+                if (!EnqueuedJobs.IsEmpty)
+                {
+                    await ProcessEnqueuedQueue();
+                }
             }
         }
 
@@ -161,7 +164,6 @@ namespace RecurringIntegrationsScheduler.Job
         private async Task ProcessEnqueuedQueue()
         {
             var fileCount = 0;
-            _httpClientHelper = new HttpClientHelper(_settings);
 
             while (EnqueuedJobs.TryDequeue(out DataMessage dataMessage))
             {
@@ -240,19 +242,32 @@ namespace RecurringIntegrationsScheduler.Job
                                 {
                                     var errorFileUrl = string.Empty;
                                     HttpResponseMessage errorFileUrlResponse;
+                                    var errorFileAttempts = 0;
+                                    const int maxErrorFileAttempts = 60;
                                     do
                                     {
+                                        errorFileAttempts++;
                                         errorFileUrlResponse = await _httpClientHelper.GetImportTargetErrorKeysFileUrl(dataMessage.MessageId, entity);
                                         if(errorFileUrlResponse.IsSuccessStatusCode)
                                         {
                                             errorFileUrl = await HttpClientHelper.ReadResponseStringAsync(errorFileUrlResponse);
-                                            if (errorFileUrl.Length == 0)
+                                            if (errorFileUrl.Length == 0 && errorFileAttempts < maxErrorFileAttempts)
                                             {
                                                 await Task.Delay(TimeSpan.FromSeconds(_settings.DelayBetweenStatusCheck));
                                             }
                                         }
+                                        else
+                                        {
+                                            break;
+                                        }
                                     }
-                                    while (errorFileUrlResponse.IsSuccessStatusCode && string.IsNullOrEmpty(errorFileUrl));
+                                    while (string.IsNullOrEmpty(errorFileUrl) && errorFileAttempts < maxErrorFileAttempts);
+
+                                    if (string.IsNullOrEmpty(errorFileUrl))
+                                    {
+                                        Log.Warn($@"Job: {_settings.JobKey}. Timed out waiting for error keys file for entity '{entity}'. Job will continue.");
+                                        continue;
+                                    }
 
                                     var response = await _httpClientHelper.GetRequestAsync(new UriBuilder(errorFileUrl).Uri, false);
                                     if (response.IsSuccessStatusCode)

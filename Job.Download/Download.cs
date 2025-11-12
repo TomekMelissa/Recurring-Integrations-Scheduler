@@ -145,50 +145,52 @@ namespace RecurringIntegrationsScheduler.Job
         private async Task Process()
         {
             DownloadQueue = new ConcurrentQueue<DataMessage>();
-            _httpClientHelper = new HttpClientHelper(_settings);
-            _dequeueUri = _httpClientHelper.GetDequeueUri();
-            _acknowledgeDownloadUri = _httpClientHelper.GetAckUri();
-
-            var contentPresent = true;
-
-            while (contentPresent)
+            using (_httpClientHelper = new HttpClientHelper(_settings))
             {
-                var response = await _httpClientHelper.GetRequestAsync(_dequeueUri);
+                _dequeueUri = _httpClientHelper.GetDequeueUri();
+                _acknowledgeDownloadUri = _httpClientHelper.GetAckUri();
 
-                switch (response.StatusCode)
+                var contentPresent = true;
+
+                while (contentPresent)
                 {
-                    case HttpStatusCode.OK:
-                        // Log success and add to Dequeued jobs for further processing
-                        var message = await response.Content.ReadAsStringAsync();
-                        var dataMessage = JsonConvert.DeserializeObject<DataMessage>(message);
+                    var response = await _httpClientHelper.GetRequestAsync(_dequeueUri);
 
-                        //Ensure that we download over https (fix for multiboxes)
-                        var newDownloadLocation = new UriBuilder(dataMessage.DownloadLocation)
-                        {
-                            Scheme = Uri.UriSchemeHttps,
-                            Port = -1
-                        };
-                        dataMessage.DownloadLocation = newDownloadLocation.Uri.AbsoluteUri;
-                        dataMessage.DataJobState = DataJobState.Dequeued;
+                    switch (response.StatusCode)
+                    {
+                        case HttpStatusCode.OK:
+                            // Log success and add to Dequeued jobs for further processing
+                            var message = await response.Content.ReadAsStringAsync();
+                            var dataMessage = JsonConvert.DeserializeObject<DataMessage>(message);
 
-                        DownloadQueue.Enqueue(dataMessage);
+                            //Ensure that we download over https (fix for multiboxes)
+                            var newDownloadLocation = new UriBuilder(dataMessage.DownloadLocation)
+                            {
+                                Scheme = Uri.UriSchemeHttps,
+                                Port = -1
+                            };
+                            dataMessage.DownloadLocation = newDownloadLocation.Uri.AbsoluteUri;
+                            dataMessage.DataJobState = DataJobState.Dequeued;
 
-                        if (Log.IsDebugEnabled)
-                            Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_File_dequeued_successfully_Download_location_1, _context.JobDetail.Key, dataMessage.DownloadLocation));
-                        break;
-                    case HttpStatusCode.NoContent:
-                        contentPresent = false;
-                        break;
-                    default:
-                        // Dequeue failed. Log error.
-                        throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Failure_response_Status_1_2_Reason_3, _context.JobDetail.Key, response.StatusCode, response.StatusCode, response.ReasonPhrase)));
-                        
+                            DownloadQueue.Enqueue(dataMessage);
+
+                            if (Log.IsDebugEnabled)
+                                Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_File_dequeued_successfully_Download_location_1, _context.JobDetail.Key, dataMessage.DownloadLocation));
+                            break;
+                        case HttpStatusCode.NoContent:
+                            contentPresent = false;
+                            break;
+                        default:
+                            // Dequeue failed. Log error.
+                            throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Failure_response_Status_1_2_Reason_3, _context.JobDetail.Key, response.StatusCode, response.StatusCode, response.ReasonPhrase)));
+
+                    }
                 }
-            }
-            if (!DownloadQueue.IsEmpty)
-            {
-                Log.InfoFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Dequeued_1_file, _context.JobDetail.Key, DownloadQueue.Count));
-                await ProcessDownloadQueue();
+                if (!DownloadQueue.IsEmpty)
+                {
+                    Log.InfoFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Dequeued_1_file, _context.JobDetail.Key, DownloadQueue.Count));
+                    await ProcessDownloadQueue();
+                }
             }
         }
 

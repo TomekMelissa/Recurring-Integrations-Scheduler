@@ -15,6 +15,8 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -263,8 +265,36 @@ namespace RecurringIntegrationsScheduler.Job
                             {
                                 String[] separator = { _settings.FilenameSeparator };
                                 var tokenList = dataMessage.Name.Split(separator, 10, StringSplitOptions.RemoveEmptyEntries);
+                                var tokenIndex = _settings.LegalEntityTokenPosition - 1;
+                                if (tokenIndex < 0 || tokenIndex >= tokenList.Length)
+                                {
+                                    var errorMessage = string.Format(CultureInfo.InvariantCulture,
+                                        "Job {0}: Unable to determine legal entity from file '{1}'. Expected token index {2} using separator '{3}'.",
+                                        _context.JobDetail.Key,
+                                        dataMessage.Name,
+                                        _settings.LegalEntityTokenPosition,
+                                        _settings.FilenameSeparator);
 
-                                targetLegalEntity = tokenList[_settings.LegalEntityTokenPosition - 1];
+                                    Log.Error(errorMessage);
+
+                                    var targetDataMessage = new DataMessage(dataMessage)
+                                    {
+                                        FullPath = Path.Combine(_settings.UploadErrorsDir, dataMessage.Name),
+                                        MessageStatus = MessageStatus.Failed
+                                    };
+
+                                    _retryPolicyForIo.Execute(() => FileOperationsHelper.Move(dataMessage.FullPath, targetDataMessage.FullPath));
+
+                                    using var errorResponse = new HttpResponseMessage(HttpStatusCode.BadRequest)
+                                    {
+                                        Content = new StringContent(errorMessage)
+                                    };
+                                    _retryPolicyForIo.Execute(() => FileOperationsHelper.WriteStatusLogFile(targetDataMessage, errorResponse, _settings.StatusFileExtension));
+
+                                    continue;
+                                }
+
+                                targetLegalEntity = tokenList[tokenIndex];
                             }
                             if(targetLegalEntity.Length > 4)
                             {
@@ -280,7 +310,7 @@ namespace RecurringIntegrationsScheduler.Job
 
                             if (importResponse.IsSuccessStatusCode)
                             {
-                                var result = importResponse.Content.ReadAsStringAsync().Result;
+                                var result = await importResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                                 var jsonResponse = (JObject)JsonConvert.DeserializeObject(result);
                                 string executionId = jsonResponse["value"].ToString();
 

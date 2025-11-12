@@ -135,18 +135,21 @@ namespace RecurringIntegrationsScheduler.Job
         private async Task Process()
         {
             EnqueuedJobs = new ConcurrentQueue<DataMessage>();
-            foreach (var dataMessage in FileOperationsHelper.GetStatusFiles(MessageStatus.InProcess, _settings.UploadSuccessDir, "*" + _settings.StatusFileExtension))
+            using (_httpClientHelper = new HttpClientHelper(_settings))
             {
-                if (_settings.LogVerbose || Log.IsDebugEnabled)
+                foreach (var dataMessage in FileOperationsHelper.GetStatusFiles(MessageStatus.InProcess, _settings.UploadSuccessDir, "*" + _settings.StatusFileExtension))
                 {
-                    Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_File_1_found_in_processing_location_and_added_to_queue_for_status_check, _context.JobDetail.Key, dataMessage.FullPath.Replace(@"{", @"{{").Replace(@"}", @"}}")));
+                    if (_settings.LogVerbose || Log.IsDebugEnabled)
+                    {
+                        Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_File_1_found_in_processing_location_and_added_to_queue_for_status_check, _context.JobDetail.Key, dataMessage.FullPath.Replace(@"{", @"{{").Replace(@"}", @"}}")));
+                    }
+                    EnqueuedJobs.Enqueue(dataMessage);
                 }
-                EnqueuedJobs.Enqueue(dataMessage);
-            }
 
-            if (!EnqueuedJobs.IsEmpty)
-            {
-                await ProcessEnqueuedQueue();
+                if (!EnqueuedJobs.IsEmpty)
+                {
+                    await ProcessEnqueuedQueue();
+                }
             }
         }
 
@@ -157,7 +160,6 @@ namespace RecurringIntegrationsScheduler.Job
         private async Task ProcessEnqueuedQueue()
         {
             var fileCount = 0;
-            _httpClientHelper = new HttpClientHelper(_settings);
 
             while (EnqueuedJobs.TryDequeue(out DataMessage dataMessage))
             {
@@ -260,7 +262,8 @@ namespace RecurringIntegrationsScheduler.Job
                 // Deserialize response to the DataJobStatusDetail object
                 if (Log.IsDebugEnabled)
                     Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Successfully_received_job_status_for_message_id_1, _context.JobDetail.Key, message));
-                return JsonConvert.DeserializeObject<DataJobStatusDetail>(response.Content.ReadAsStringAsync().Result, new StringEnumConverter());
+                var payload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                return JsonConvert.DeserializeObject<DataJobStatusDetail>(payload, new StringEnumConverter());
             }
             else
             {

@@ -897,4 +897,118 @@ Default example above means: Each working day of the week (MON-FRI) run every 15
   <data name="URL_for_GetExportedPackageUrl_action_is_missing" xml:space="preserve">
     <value>URL for GetExportedPackageUrl action is missing</value>
   </data>
+  <data name="Sftp_TabTitle" xml:space="preserve">
+    <value>SFTP</value>
+  </data>
+  <data name="Sftp_GroupTitle" xml:space="preserve">
+    <value>SFTP</value>
+  </data>
+  <data name="Sftp_EnableIntegration" xml:space="preserve">
+    <value>Enable SFTP integration</value>
+  </data>
+  <data name="Sftp_HostLabel" xml:space="preserve">
+    <value>Host:</value>
+  </data>
+  <data name="Sftp_PortLabel" xml:space="preserve">
+    <value>Port:</value>
+  </data>
+  <data name="Sftp_UsernameLabel" xml:space="preserve">
+    <value>Username:</value>
+  </data>
+  <data name="Sftp_PasswordLabel" xml:space="preserve">
+    <value>Password:</value>
+  </data>
+  <data name="Sftp_UsePrivateKey" xml:space="preserve">
+    <value>Use private key</value>
+  </data>
+  <data name="Sftp_KeyFileLabel" xml:space="preserve">
+    <value>Key file:</value>
+  </data>
+  <data name="Sftp_KeyPassphraseLabel" xml:space="preserve">
+    <value>Key passphrase:</value>
+  </data>
+  <data name="Sftp_RemoteFolderLabel" xml:space="preserve">
+    <value>Remote folder:</value>
+  </data>
+  <data name="Sftp_FileMaskLabel" xml:space="preserve">
+    <value>File mask:</value>
+  </data>
+  <data name="Sftp_DefaultFileMask" xml:space="preserve">
+    <value>*.*</value>
+  </data>
+  <data name="Sftp_BrowseButton" xml:space="preserve">
+    <value>Browse...</value>
+  </data>
+  <data name="Sftp_KeyFileDialogTitle" xml:space="preserve">
+    <value>Select private key file</value>
+  </data>
+  <data name="Sftp_KeyFileDialogFilter" xml:space="preserve">
+    <value>Key files (*.ppk;*.pem)|*.ppk;*.pem|All files (*.*)|*.*</value>
+  </data>
+  <data name="Sftp_InboundGroupTitle" xml:space="preserve">
+    <value>Inbound SFTP (download files)</value>
+  </data>
+  <data name="Sftp_OutboundGroupTitle" xml:space="preserve">
+    <value>Outbound SFTP (upload files)</value>
+  </data>
+  <data name="Add_server" xml:space="preserve">
+    <value>Add server</value>
+  </data>
+  <data name="Edit_server" xml:space="preserve">
+    <value>Edit server</value>
+  </data>
+  <data name="Add_credential" xml:space="preserve">
+    <value>Add credential</value>
+  </data>
+  <data name="Edit_credential" xml:space="preserve">
+    <value>Edit credential</value>
+  </data>
+  <data name="Name_is_required" xml:space="preserve">
+    <value>Name is required.</value>
+  </data>
+  <data name="Host_is_required" xml:space="preserve">
+    <value>Host is required.</value>
+  </data>
+  <data name="Username_is_required" xml:space="preserve">
+    <value>Username is required.</value>
+  </data>
+  <data name="Password_is_required" xml:space="preserve">
+    <value>Password is required.</value>
+  </data>
+  <data name="Key_path_is_required" xml:space="preserve">
+    <value>Key file path is required.</value>
+  </data>
+  <data name="Sftp_ServerLabel" xml:space="preserve">
+    <value>Server:</value>
+  </data>
+  <data name="Sftp_CredentialLabel" xml:space="preserve">
+    <value>Credentials:</value>
+  </data>
+  <data name="Sftp_ServersGroupTitle" xml:space="preserve">
+    <value>SFTP servers</value>
+  </data>
+  <data name="Sftp_CredentialsGroupTitle" xml:space="preserve">
+    <value>SFTP credentials</value>
+  </data>
+  <data name="Sftp_ServerHost" xml:space="preserve">
+    <value>Host</value>
+  </data>
+  <data name="Sftp_ServerPort" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="Sftp_CredentialUsername" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="Sftp_CredentialAuthType" xml:space="preserve">
+    <value>Auth type</value>
+  </data>
+  <data name="No_sftp_servers_configured" xml:space="preserve">
+    <value>No SFTP servers are configured. Add one under Parameters.</value>
+  </data>
+  <data name="No_sftp_credentials_configured" xml:space="preserve">
+    <value>No SFTP credentials are configured. Add one under Parameters.</value>
+  </data>
+  <data name="Private_key" xml:space="preserve">
+    <value>Private key</value>
+  </data>
 </root>

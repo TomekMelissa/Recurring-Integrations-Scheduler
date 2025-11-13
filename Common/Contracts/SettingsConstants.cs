@@ -194,6 +194,8 @@ namespace RecurringIntegrationsScheduler.Common.Contracts
         public const string SftpInboundKeyPassphrase = "SftpInboundKeyPassphrase";
         public const string SftpInboundRemoteFolder = "SftpInboundRemoteFolder";
         public const string SftpInboundFileMask = "SftpInboundFileMask";
+        public const string SftpInboundServerName = "SftpInboundServerName";
+        public const string SftpInboundCredentialName = "SftpInboundCredentialName";
 
         public const string SftpOutboundHost = "SftpOutboundHost";
         public const string SftpOutboundPort = "SftpOutboundPort";
@@ -204,6 +206,8 @@ namespace RecurringIntegrationsScheduler.Common.Contracts
         public const string SftpOutboundKeyPassphrase = "SftpOutboundKeyPassphrase";
         public const string SftpOutboundRemoteFolder = "SftpOutboundRemoteFolder";
         public const string SftpOutboundFileMask = "SftpOutboundFileMask";
+        public const string SftpOutboundServerName = "SftpOutboundServerName";
+        public const string SftpOutboundCredentialName = "SftpOutboundCredentialName";
 
         /// <summary>
         /// Upload success folder

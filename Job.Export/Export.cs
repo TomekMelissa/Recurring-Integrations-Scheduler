@@ -209,12 +209,17 @@ namespace RecurringIntegrationsScheduler.Job
                     };
                     _retryPolicyForIo.Execute(() => FileOperationsHelper.Create(downloadedStream, dataMessage.FullPath));
 
+                    var uploadedToSftp = UploadFileToSftp(dataMessage.FullPath);
+
                     if (_settings.UnzipPackage)
                     {
                         _retryPolicyForIo.Execute(() => FileOperationsHelper.UnzipPackage(dataMessage.FullPath, _settings.DeletePackage, _settings.AddTimestamp));
                     }
 
-                    UploadFileToSftp(dataMessage.FullPath);
+                    if (uploadedToSftp)
+                    {
+                        MoveToUploadedFolderIfExists(dataMessage.FullPath);
+                    }
                 }
                 else if (executionStatus == "Unknown" || executionStatus == "Failed" || executionStatus == "Canceled")
                 {
@@ -227,11 +232,11 @@ namespace RecurringIntegrationsScheduler.Job
             }
         }
 
-        private void UploadFileToSftp(string filePath)
+        private bool UploadFileToSftp(string filePath)
         {
             if (!_settings.UseSftpOutbound || _settings.OutboundSftpConfiguration == null)
             {
-                return;
+                return false;
             }
 
             if (!File.Exists(filePath))
@@ -240,13 +245,13 @@ namespace RecurringIntegrationsScheduler.Job
                     "Job {0}: Local file '{1}' was not found for SFTP upload.",
                     _context.JobDetail.Key,
                     filePath);
-                return;
+                return false;
             }
 
             try
             {
                 SftpTransferHelper.UploadFile(_settings.OutboundSftpConfiguration, filePath, Log);
-                MoveToUploadedFolder(filePath);
+                return true;
             }
             catch (Exception ex)
             {
@@ -257,6 +262,16 @@ namespace RecurringIntegrationsScheduler.Job
                 Log.Error(message, ex);
                 throw new JobExecutionException(message, ex, false);
             }
+        }
+
+        private void MoveToUploadedFolderIfExists(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                return;
+            }
+
+            MoveToUploadedFolder(filePath);
         }
 
         private void MoveToUploadedFolder(string filePath)

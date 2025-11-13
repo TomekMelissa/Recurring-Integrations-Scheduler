@@ -638,6 +638,234 @@ namespace RecurringIntegrationsScheduler.Properties {
                 return ResourceManager.GetString("cronTriggerInfo", resourceCulture);
             }
         }
+
+        internal static string Sftp_TabTitle {
+            get {
+                return ResourceManager.GetString("Sftp_TabTitle", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_GroupTitle {
+            get {
+                return ResourceManager.GetString("Sftp_GroupTitle", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_EnableIntegration {
+            get {
+                return ResourceManager.GetString("Sftp_EnableIntegration", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_HostLabel {
+            get {
+                return ResourceManager.GetString("Sftp_HostLabel", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_PortLabel {
+            get {
+                return ResourceManager.GetString("Sftp_PortLabel", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_UsernameLabel {
+            get {
+                return ResourceManager.GetString("Sftp_UsernameLabel", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_PasswordLabel {
+            get {
+                return ResourceManager.GetString("Sftp_PasswordLabel", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_UsePrivateKey {
+            get {
+                return ResourceManager.GetString("Sftp_UsePrivateKey", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_KeyFileLabel {
+            get {
+                return ResourceManager.GetString("Sftp_KeyFileLabel", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_KeyPassphraseLabel {
+            get {
+                return ResourceManager.GetString("Sftp_KeyPassphraseLabel", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_RemoteFolderLabel {
+            get {
+                return ResourceManager.GetString("Sftp_RemoteFolderLabel", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_FileMaskLabel {
+            get {
+                return ResourceManager.GetString("Sftp_FileMaskLabel", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_DefaultFileMask {
+            get {
+                return ResourceManager.GetString("Sftp_DefaultFileMask", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_BrowseButton {
+            get {
+                return ResourceManager.GetString("Sftp_BrowseButton", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_KeyFileDialogTitle {
+            get {
+                return ResourceManager.GetString("Sftp_KeyFileDialogTitle", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_KeyFileDialogFilter {
+            get {
+                return ResourceManager.GetString("Sftp_KeyFileDialogFilter", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_InboundGroupTitle {
+            get {
+                return ResourceManager.GetString("Sftp_InboundGroupTitle", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_OutboundGroupTitle {
+            get {
+                return ResourceManager.GetString("Sftp_OutboundGroupTitle", resourceCulture);
+            }
+        }
+
+        internal static string Add_server {
+            get {
+                return ResourceManager.GetString("Add_server", resourceCulture);
+            }
+        }
+
+        internal static string Edit_server {
+            get {
+                return ResourceManager.GetString("Edit_server", resourceCulture);
+            }
+        }
+
+        internal static string Add_credential {
+            get {
+                return ResourceManager.GetString("Add_credential", resourceCulture);
+            }
+        }
+
+        internal static string Edit_credential {
+            get {
+                return ResourceManager.GetString("Edit_credential", resourceCulture);
+            }
+        }
+
+        internal static string Name_is_required {
+            get {
+                return ResourceManager.GetString("Name_is_required", resourceCulture);
+            }
+        }
+
+        internal static string Host_is_required {
+            get {
+                return ResourceManager.GetString("Host_is_required", resourceCulture);
+            }
+        }
+
+        internal static string Username_is_required {
+            get {
+                return ResourceManager.GetString("Username_is_required", resourceCulture);
+            }
+        }
+
+        internal static string Password_is_required {
+            get {
+                return ResourceManager.GetString("Password_is_required", resourceCulture);
+            }
+        }
+
+        internal static string Key_path_is_required {
+            get {
+                return ResourceManager.GetString("Key_path_is_required", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_ServerLabel {
+            get {
+                return ResourceManager.GetString("Sftp_ServerLabel", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_CredentialLabel {
+            get {
+                return ResourceManager.GetString("Sftp_CredentialLabel", resourceCulture);
+            }
+        }
+
+        internal static string No_sftp_servers_configured {
+            get {
+                return ResourceManager.GetString("No_sftp_servers_configured", resourceCulture);
+            }
+        }
+
+        internal static string No_sftp_credentials_configured {
+            get {
+                return ResourceManager.GetString("No_sftp_credentials_configured", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_ServersGroupTitle {
+            get {
+                return ResourceManager.GetString("Sftp_ServersGroupTitle", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_CredentialsGroupTitle {
+            get {
+                return ResourceManager.GetString("Sftp_CredentialsGroupTitle", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_ServerHost {
+            get {
+                return ResourceManager.GetString("Sftp_ServerHost", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_ServerPort {
+            get {
+                return ResourceManager.GetString("Sftp_ServerPort", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_CredentialUsername {
+            get {
+                return ResourceManager.GetString("Sftp_CredentialUsername", resourceCulture);
+            }
+        }
+
+        internal static string Sftp_CredentialAuthType {
+            get {
+                return ResourceManager.GetString("Sftp_CredentialAuthType", resourceCulture);
+            }
+        }
+
+        internal static string Private_key {
+            get {
+                return ResourceManager.GetString("Private_key", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to D365FO instance seems to be up and running..

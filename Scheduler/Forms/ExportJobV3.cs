@@ -494,19 +494,43 @@ namespace RecurringIntegrationsScheduler.Forms
             }
 
             _outboundSftpControl.SftpEnabled = map.GetBooleanValue(SettingsConstants.UseSftpOutbound);
-            _outboundSftpControl.Host = map.GetString(SettingsConstants.SftpOutboundHost);
-            var port = map.GetInt(SettingsConstants.SftpOutboundPort);
-            if (port > 0)
-            {
-                _outboundSftpControl.Port = port;
-            }
-            _outboundSftpControl.Username = map.GetString(SettingsConstants.SftpOutboundUsername);
-            _outboundSftpControl.Password = DecryptOrEmpty(map.GetString(SettingsConstants.SftpOutboundPassword));
-            _outboundSftpControl.UsePrivateKey = map.GetBooleanValue(SettingsConstants.SftpOutboundUseKey);
-            _outboundSftpControl.PrivateKeyPath = map.GetString(SettingsConstants.SftpOutboundKeyPath);
-            _outboundSftpControl.PrivateKeyPassphrase = DecryptOrEmpty(map.GetString(SettingsConstants.SftpOutboundKeyPassphrase));
             _outboundSftpControl.RemoteFolder = map.GetString(SettingsConstants.SftpOutboundRemoteFolder);
-            _outboundSftpControl.FileMask = map.GetString(SettingsConstants.SftpOutboundFileMask) ?? "*.*";
+            _outboundSftpControl.FileMask = map.GetString(SettingsConstants.SftpOutboundFileMask) ?? Resources.Sftp_DefaultFileMask;
+
+            var serverName = map.GetString(SettingsConstants.SftpOutboundServerName);
+            if (!string.IsNullOrWhiteSpace(serverName))
+            {
+                _outboundSftpControl.SelectedServerName = serverName;
+            }
+            else
+            {
+                var server = FormsHelper.FindSftpServer(
+                    map.GetString(SettingsConstants.SftpOutboundHost),
+                    map.GetInt(SettingsConstants.SftpOutboundPort));
+                if (server != null)
+                {
+                    _outboundSftpControl.SelectedServerName = server.Name;
+                }
+            }
+
+            var credentialName = map.GetString(SettingsConstants.SftpOutboundCredentialName);
+            if (!string.IsNullOrWhiteSpace(credentialName))
+            {
+                _outboundSftpControl.SelectedCredentialName = credentialName;
+            }
+            else
+            {
+                var credential = FormsHelper.FindSftpCredential(
+                    map.GetString(SettingsConstants.SftpOutboundUsername),
+                    map.GetBooleanValue(SettingsConstants.SftpOutboundUseKey),
+                    map.GetString(SettingsConstants.SftpOutboundPassword),
+                    map.GetString(SettingsConstants.SftpOutboundKeyPath),
+                    map.GetString(SettingsConstants.SftpOutboundKeyPassphrase));
+                if (credential != null)
+                {
+                    _outboundSftpControl.SelectedCredentialName = credential.Name;
+                }
+            }
         }
 
         private void ApplyOutboundSftpSettings(JobDataMap map)
@@ -522,15 +546,32 @@ namespace RecurringIntegrationsScheduler.Forms
                 return;
             }
 
-            map.Add(SettingsConstants.SftpOutboundHost, (_outboundSftpControl.Host ?? string.Empty).Trim());
-            map.Add(SettingsConstants.SftpOutboundPort, _outboundSftpControl.Port);
-            map.Add(SettingsConstants.SftpOutboundUsername, (_outboundSftpControl.Username ?? string.Empty).Trim());
-            map.Add(SettingsConstants.SftpOutboundPassword, EncryptOrEmpty(_outboundSftpControl.Password));
-            map.Add(SettingsConstants.SftpOutboundUseKey, _outboundSftpControl.UsePrivateKey);
-            map.Add(SettingsConstants.SftpOutboundKeyPath, (_outboundSftpControl.PrivateKeyPath ?? string.Empty).Trim());
-            map.Add(SettingsConstants.SftpOutboundKeyPassphrase, EncryptOrEmpty(_outboundSftpControl.PrivateKeyPassphrase));
+            var server = _outboundSftpControl.SelectedServer;
+            if (server == null)
+            {
+                FormsHelper.ThrowSftpConfigurationError(Resources.No_sftp_servers_configured);
+            }
+
+            var credential = _outboundSftpControl.SelectedCredential;
+            if (credential == null)
+            {
+                FormsHelper.ThrowSftpConfigurationError(Resources.No_sftp_credentials_configured);
+            }
+
+            var decryptedPassword = string.IsNullOrEmpty(credential.Password) ? string.Empty : EncryptDecrypt.Decrypt(credential.Password);
+            var decryptedPassphrase = string.IsNullOrEmpty(credential.KeyPassphrase) ? string.Empty : EncryptDecrypt.Decrypt(credential.KeyPassphrase);
+
+            map.Add(SettingsConstants.SftpOutboundServerName, server.Name);
+            map.Add(SettingsConstants.SftpOutboundHost, server.Host?.Trim() ?? string.Empty);
+            map.Add(SettingsConstants.SftpOutboundPort, server.Port);
+            map.Add(SettingsConstants.SftpOutboundCredentialName, credential.Name);
+            map.Add(SettingsConstants.SftpOutboundUsername, credential.Username?.Trim() ?? string.Empty);
+            map.Add(SettingsConstants.SftpOutboundPassword, EncryptOrEmpty(decryptedPassword));
+            map.Add(SettingsConstants.SftpOutboundUseKey, credential.UsePrivateKey);
+            map.Add(SettingsConstants.SftpOutboundKeyPath, credential.UsePrivateKey ? credential.KeyPath?.Trim() ?? string.Empty : string.Empty);
+            map.Add(SettingsConstants.SftpOutboundKeyPassphrase, EncryptOrEmpty(decryptedPassphrase));
             map.Add(SettingsConstants.SftpOutboundRemoteFolder, (_outboundSftpControl.RemoteFolder ?? string.Empty).Trim());
-            map.Add(SettingsConstants.SftpOutboundFileMask, string.IsNullOrWhiteSpace(_outboundSftpControl.FileMask) ? "*.*" : _outboundSftpControl.FileMask);
+            map.Add(SettingsConstants.SftpOutboundFileMask, string.IsNullOrWhiteSpace(_outboundSftpControl.FileMask) ? Resources.Sftp_DefaultFileMask : _outboundSftpControl.FileMask);
         }
 
         private static string EncryptOrEmpty(string secret)

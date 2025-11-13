@@ -1,5 +1,8 @@
-﻿using System;
-using System.Drawing;
+﻿using RecurringIntegrationsScheduler.Properties;
+using RecurringIntegrationsScheduler.Settings;
+using System;
+using System.ComponentModel;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace RecurringIntegrationsScheduler.Controls
@@ -15,16 +18,13 @@ namespace RecurringIntegrationsScheduler.Controls
         private readonly GroupBox _groupBox;
         private readonly TableLayoutPanel _layout;
         private readonly CheckBox _enableCheckBox;
-        private readonly TextBox _hostTextBox;
-        private readonly NumericUpDown _portUpDown;
-        private readonly TextBox _usernameTextBox;
-        private readonly TextBox _passwordTextBox;
-        private readonly CheckBox _useKeyCheckBox;
-        private readonly TextBox _keyPathTextBox;
-        private readonly Button _browseKeyButton;
-        private readonly TextBox _keyPassphraseTextBox;
+        private readonly ComboBox _serverComboBox;
+        private readonly ComboBox _credentialComboBox;
         private readonly TextBox _remoteFolderTextBox;
         private readonly TextBox _fileMaskTextBox;
+
+        private BindingSource _serverBindingSource;
+        private BindingSource _credentialBindingSource;
 
         public SftpSettingsControl()
         {
@@ -33,53 +33,43 @@ namespace RecurringIntegrationsScheduler.Controls
             _groupBox = new GroupBox
             {
                 Dock = DockStyle.Fill,
-                Text = "SFTP"
+                Text = Resources.Sftp_GroupTitle
             };
 
             _layout = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                ColumnCount = 3,
+                ColumnCount = 2,
                 AutoSize = true,
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 Padding = new Padding(8)
             };
-            _layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            _layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 180));
             _layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            _layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 
-            _enableCheckBox = new CheckBox { Text = "Enable SFTP integration" };
+            _enableCheckBox = new CheckBox { Text = Resources.Sftp_EnableIntegration, AutoSize = true };
             _enableCheckBox.CheckedChanged += (_, __) => UpdateControlState();
 
-            _hostTextBox = new TextBox();
-            _portUpDown = new NumericUpDown
+            _serverComboBox = new ComboBox
             {
-                Minimum = 1,
-                Maximum = 65535,
-                Value = 22
+                Dock = DockStyle.Fill,
+                DropDownStyle = ComboBoxStyle.DropDownList
             };
-            _usernameTextBox = new TextBox();
-            _passwordTextBox = new TextBox { UseSystemPasswordChar = true };
-            _useKeyCheckBox = new CheckBox { Text = "Use private key" };
-            _useKeyCheckBox.CheckedChanged += (_, __) => UpdateControlState();
 
-            _keyPathTextBox = new TextBox();
-            _browseKeyButton = new Button { Text = "Browse...", AutoSize = true };
-            _browseKeyButton.Click += BrowseKeyButtonOnClick;
-            _keyPassphraseTextBox = new TextBox { UseSystemPasswordChar = true };
+            _credentialComboBox = new ComboBox
+            {
+                Dock = DockStyle.Fill,
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+
             _remoteFolderTextBox = new TextBox();
-            _fileMaskTextBox = new TextBox { Text = "*.*" };
+            _fileMaskTextBox = new TextBox { Text = Resources.Sftp_DefaultFileMask };
 
-            AddRow(_enableCheckBox, span: 3);
-            AddRow(new Label { Text = "Host:", AutoSize = true }, _hostTextBox);
-            AddRow(new Label { Text = "Port:", AutoSize = true }, _portUpDown);
-            AddRow(new Label { Text = "Username:", AutoSize = true }, _usernameTextBox);
-            AddRow(new Label { Text = "Password:", AutoSize = true }, _passwordTextBox);
-            AddRow(_useKeyCheckBox, span: 3);
-            AddRow(new Label { Text = "Key file:", AutoSize = true }, _keyPathTextBox, _browseKeyButton);
-            AddRow(new Label { Text = "Key passphrase:", AutoSize = true }, _keyPassphraseTextBox);
-            AddRow(new Label { Text = "Remote folder:", AutoSize = true }, _remoteFolderTextBox);
-            AddRow(new Label { Text = "File mask:", AutoSize = true }, _fileMaskTextBox);
+            AddRow(_enableCheckBox, span: 2);
+            AddRow(new Label { Text = Resources.Sftp_ServerLabel, AutoSize = true, TextAlign = System.Drawing.ContentAlignment.MiddleRight }, _serverComboBox);
+            AddRow(new Label { Text = Resources.Sftp_CredentialLabel, AutoSize = true, TextAlign = System.Drawing.ContentAlignment.MiddleRight }, _credentialComboBox);
+            AddRow(new Label { Text = Resources.Sftp_RemoteFolderLabel, AutoSize = true, TextAlign = System.Drawing.ContentAlignment.MiddleRight }, _remoteFolderTextBox);
+            AddRow(new Label { Text = Resources.Sftp_FileMaskLabel, AutoSize = true, TextAlign = System.Drawing.ContentAlignment.MiddleRight }, _fileMaskTextBox);
 
             _groupBox.Controls.Add(_layout);
             Controls.Add(_groupBox);
@@ -87,52 +77,44 @@ namespace RecurringIntegrationsScheduler.Controls
             UpdateControlState();
         }
 
-        private void AddRow(Control control, Control second = null, Control third = null, int span = 1)
+        private void AddRow(Control control, Control field = null, int span = 1)
         {
             var rowIndex = _layout.RowCount++;
             _layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-            if (span == 3)
+            if (field == null)
             {
                 _layout.Controls.Add(control, 0, rowIndex);
-                _layout.SetColumnSpan(control, 3);
+                _layout.SetColumnSpan(control, span);
+                control.Margin = new Padding(0, 4, 0, 4);
                 return;
             }
 
             _layout.Controls.Add(control, 0, rowIndex);
+            control.Dock = DockStyle.Fill;
             control.Margin = new Padding(0, 4, 8, 4);
 
-            if (second != null)
-            {
-                _layout.Controls.Add(second, 1, rowIndex);
-                second.Dock = DockStyle.Fill;
-                second.Margin = new Padding(0, 4, 8, 4);
-            }
-
-            if (third != null)
-            {
-                _layout.Controls.Add(third, 2, rowIndex);
-                third.Margin = new Padding(0, 4, 0, 4);
-            }
+            _layout.Controls.Add(field, 1, rowIndex);
+            field.Dock = DockStyle.Fill;
+            field.Margin = new Padding(0, 4, 0, 4);
         }
 
-        private void BrowseKeyButtonOnClick(object sender, EventArgs e)
+        public void BindData(SftpServers servers, SftpCredentials credentials)
         {
-            using var dialog = new OpenFileDialog
-            {
-                Filter = "Key files (*.ppk;*.pem)|*.ppk;*.pem|All files (*.*)|*.*",
-                Title = "Select private key file"
-            };
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                _keyPathTextBox.Text = dialog.FileName;
-            }
+            _serverBindingSource = new BindingSource { DataSource = servers ?? new SftpServers() };
+            _serverComboBox.DataSource = _serverBindingSource;
+            _serverComboBox.DisplayMember = nameof(SftpServer.Name);
+            _serverComboBox.SelectedIndex = -1;
+
+            _credentialBindingSource = new BindingSource { DataSource = credentials ?? new SftpCredentials() };
+            _credentialComboBox.DataSource = _credentialBindingSource;
+            _credentialComboBox.DisplayMember = nameof(SftpCredential.Name);
+            _credentialComboBox.SelectedIndex = -1;
         }
 
         private void UpdateControlState()
         {
             var enabled = _enableCheckBox.Checked;
-
             foreach (Control control in _layout.Controls)
             {
                 if (!ReferenceEquals(control, _enableCheckBox))
@@ -140,65 +122,63 @@ namespace RecurringIntegrationsScheduler.Controls
                     control.Enabled = enabled;
                 }
             }
-
-            _keyPathTextBox.Enabled = enabled && _useKeyCheckBox.Checked;
-            _browseKeyButton.Enabled = enabled && _useKeyCheckBox.Checked;
-            _keyPassphraseTextBox.Enabled = enabled && _useKeyCheckBox.Checked;
-            _passwordTextBox.Enabled = enabled && !_useKeyCheckBox.Checked;
         }
 
         public bool SftpEnabled
         {
             get => _enableCheckBox.Checked;
-            set => _enableCheckBox.Checked = value;
-        }
-
-        public string Host
-        {
-            get => _hostTextBox.Text;
-            set => _hostTextBox.Text = value;
-        }
-
-        public int Port
-        {
-            get => (int)_portUpDown.Value;
             set
             {
-                if (value >= _portUpDown.Minimum && value <= _portUpDown.Maximum)
-                {
-                    _portUpDown.Value = value;
-                }
+                _enableCheckBox.Checked = value;
+                UpdateControlState();
             }
         }
 
-        public string Username
+        public SftpServer SelectedServer => _serverComboBox.SelectedItem as SftpServer;
+
+        public SftpCredential SelectedCredential => _credentialComboBox.SelectedItem as SftpCredential;
+
+        public string SelectedServerName
         {
-            get => _usernameTextBox.Text;
-            set => _usernameTextBox.Text = value;
+            get => SelectedServer?.Name;
+            set => SelectItemByName(_serverComboBox, value);
         }
 
-        public string Password
+        public string SelectedCredentialName
         {
-            get => _passwordTextBox.Text;
-            set => _passwordTextBox.Text = value;
+            get => SelectedCredential?.Name;
+            set => SelectItemByName(_credentialComboBox, value);
         }
 
-        public bool UsePrivateKey
+        private static void SelectItemByName(ComboBox comboBox, string name)
         {
-            get => _useKeyCheckBox.Checked;
-            set => _useKeyCheckBox.Checked = value;
-        }
+            if (comboBox == null)
+            {
+                return;
+            }
 
-        public string PrivateKeyPath
-        {
-            get => _keyPathTextBox.Text;
-            set => _keyPathTextBox.Text = value;
-        }
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                comboBox.SelectedIndex = -1;
+                return;
+            }
 
-        public string PrivateKeyPassphrase
-        {
-            get => _keyPassphraseTextBox.Text;
-            set => _keyPassphraseTextBox.Text = value;
+            for (var i = 0; i < comboBox.Items.Count; i++)
+            {
+                if (comboBox.Items[i] is SftpServer server && server.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    comboBox.SelectedIndex = i;
+                    return;
+                }
+
+                if (comboBox.Items[i] is SftpCredential credential && credential.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    comboBox.SelectedIndex = i;
+                    return;
+                }
+            }
+
+            comboBox.SelectedIndex = -1;
         }
 
         public string RemoteFolder
@@ -210,14 +190,50 @@ namespace RecurringIntegrationsScheduler.Controls
         public string FileMask
         {
             get => _fileMaskTextBox.Text;
-            set => _fileMaskTextBox.Text = value;
+            set => _fileMaskTextBox.Text = string.IsNullOrWhiteSpace(value) ? Resources.Sftp_DefaultFileMask : value;
         }
+
+        public bool HasServerOptions => _serverBindingSource?.Count > 0;
+
+        public bool HasCredentialOptions => _credentialBindingSource?.Count > 0;
 
         public void SetMode(SftpMode mode)
         {
             _groupBox.Text = mode == SftpMode.Inbound
-                ? "Inbound SFTP (download files)"
-                : "Outbound SFTP (upload files)";
+                ? Resources.Sftp_InboundGroupTitle
+                : Resources.Sftp_OutboundGroupTitle;
+        }
+
+        public void SelectServer(Func<SftpServer, bool> predicate)
+        {
+            if (predicate == null || _serverBindingSource == null)
+            {
+                return;
+            }
+
+            var server = _serverBindingSource.List.Cast<SftpServer>().FirstOrDefault(predicate);
+            if (server == null)
+            {
+                return;
+            }
+
+            SelectItemByName(_serverComboBox, server.Name);
+        }
+
+        public void SelectCredential(Func<SftpCredential, bool> predicate)
+        {
+            if (predicate == null || _credentialBindingSource == null)
+            {
+                return;
+            }
+
+            var credential = _credentialBindingSource.List.Cast<SftpCredential>().FirstOrDefault(predicate);
+            if (credential == null)
+            {
+                return;
+            }
+
+            SelectItemByName(_credentialComboBox, credential.Name);
         }
     }
 }

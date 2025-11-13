@@ -37,7 +37,7 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
                         continue;
                     }
 
-                    var localPath = Path.Combine(localFolder, entry.Name);
+                    var localPath = ResolveUniqueLocalPath(localFolder, entry.Name, log);
                     using (var targetStream = File.Create(localPath))
                     {
                         client.DownloadFile(entry.FullName, targetStream);
@@ -113,6 +113,42 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
                     client.CreateDirectory(path);
                 }
             }
+        }
+
+        internal static string ResolveUniqueLocalPath(string localFolder, string fileName, ILog log)
+        {
+            Directory.CreateDirectory(localFolder);
+
+            var safeFileName = Path.GetFileName(fileName) ?? fileName;
+            var basePath = Path.Combine(localFolder, safeFileName);
+
+            if (!File.Exists(basePath))
+            {
+                return basePath;
+            }
+
+            var nameWithoutExtension = Path.GetFileNameWithoutExtension(safeFileName);
+            if (string.IsNullOrEmpty(nameWithoutExtension))
+            {
+                nameWithoutExtension = safeFileName;
+            }
+            var extension = Path.GetExtension(safeFileName) ?? string.Empty;
+
+            var counter = 1;
+            string candidatePath;
+            do
+            {
+                var candidateName = string.Format(CultureInfo.InvariantCulture, "{0}_{1}{2}", nameWithoutExtension, counter, extension);
+                candidatePath = Path.Combine(localFolder, candidateName);
+                counter++;
+            } while (File.Exists(candidatePath));
+
+            log?.WarnFormat(CultureInfo.InvariantCulture,
+                "Local file '{0}' already exists. Using '{1}' instead to avoid overwriting.",
+                basePath,
+                candidatePath);
+
+            return candidatePath;
         }
 
         private static string CombineRemotePath(string part1, string part2)

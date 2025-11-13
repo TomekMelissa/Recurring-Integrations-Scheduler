@@ -228,5 +228,33 @@ namespace RecurringIntegrationsScheduler.Properties {
                 this["AadApplications"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<ArrayOfSftpServer xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" />")]
+        [global::System.Configuration.SettingsManageabilityAttribute(global::System.Configuration.SettingsManageability.Roaming)]
+        public global::RecurringIntegrationsScheduler.Settings.SftpServers SftpServers {
+            get {
+                return ((global::RecurringIntegrationsScheduler.Settings.SftpServers)(this["SftpServers"]));
+            }
+            set {
+                this["SftpServers"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<ArrayOfSftpCredential xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" />")]
+        [global::System.Configuration.SettingsManageabilityAttribute(global::System.Configuration.SettingsManageability.Roaming)]
+        public global::RecurringIntegrationsScheduler.Settings.SftpCredentials SftpCredentials {
+            get {
+                return ((global::RecurringIntegrationsScheduler.Settings.SftpCredentials)(this["SftpCredentials"]));
+            }
+            set {
+                this["SftpCredentials"] = value;
+            }
+        }
     }
 }

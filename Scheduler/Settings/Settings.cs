@@ -221,4 +221,38 @@ namespace RecurringIntegrationsScheduler.Settings
     public class Users : BindingList<User>
     {
     }
+
+    [Serializable]
+    public class SftpServer
+    {
+        public string Name { get; set; }
+
+        public string Host { get; set; }
+
+        public int Port { get; set; } = 22;
+    }
+
+    public class SftpServers : BindingList<SftpServer>
+    {
+    }
+
+    [Serializable]
+    public class SftpCredential
+    {
+        public string Name { get; set; }
+
+        public string Username { get; set; }
+
+        public bool UsePrivateKey { get; set; }
+
+        public string Password { get; set; }
+
+        public string KeyPath { get; set; }
+
+        public string KeyPassphrase { get; set; }
+    }
+
+    public class SftpCredentials : BindingList<SftpCredential>
+    {
+    }
 }

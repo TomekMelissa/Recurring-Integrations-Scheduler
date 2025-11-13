@@ -241,6 +241,18 @@
     <Compile Include="Forms\Parameters.Designer.cs">
       <DependentUpon>Parameters.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\SftpServerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\SftpServerForm.Designer.cs">
+      <DependentUpon>SftpServerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\SftpCredentialForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\SftpCredentialForm.Designer.cs">
+      <DependentUpon>SftpCredentialForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

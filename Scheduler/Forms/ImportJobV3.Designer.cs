@@ -1266,7 +1266,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.fileSelectionGroupBox.Controls.Add(this.orderByComboBox);
             this.fileSelectionGroupBox.Controls.Add(this.orderLabel);
             this.fileSelectionGroupBox.Controls.Add(this.orderByPanel);
-            this.fileSelectionGroupBox.Location = new System.Drawing.Point(3, 288);
+            this.fileSelectionGroupBox.Location = new System.Drawing.Point(470, 7);
             this.fileSelectionGroupBox.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.fileSelectionGroupBox.Name = "fileSelectionGroupBox";
             this.fileSelectionGroupBox.Padding = new System.Windows.Forms.Padding(4, 6, 4, 6);
@@ -1691,9 +1691,9 @@ namespace RecurringIntegrationsScheduler.Forms
             // importJobDetailsTabPage
             // 
             this.importJobDetailsTabPage.BackColor = System.Drawing.SystemColors.Control;
-            this.importJobDetailsTabPage.Controls.Add(this.targetCompanyGroupBox);
-            this.importJobDetailsTabPage.Controls.Add(this.fileSelectionGroupBox);
             this.importJobDetailsTabPage.Controls.Add(this.importDetailsGroupBox);
+            this.importJobDetailsTabPage.Controls.Add(this.fileSelectionGroupBox);
+            this.importJobDetailsTabPage.Controls.Add(this.targetCompanyGroupBox);
             this.importJobDetailsTabPage.Location = new System.Drawing.Point(8, 39);
             this.importJobDetailsTabPage.Margin = new System.Windows.Forms.Padding(4);
             this.importJobDetailsTabPage.Name = "importJobDetailsTabPage";

@@ -68,8 +68,7 @@ namespace RecurringIntegrationsScheduler
                 {
                     lock (SyncRoot)
                     {
-                        if (_instance == null)
-                            _instance = new Scheduler();
+                        _instance ??= new Scheduler();
                     }
                 }
                 return _instance;

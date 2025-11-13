@@ -47,9 +47,9 @@
             this.layoutPanel.Location = new System.Drawing.Point(10, 10);
             this.layoutPanel.Name = "layoutPanel";
             this.layoutPanel.RowCount = 3;
-            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.layoutPanel.Size = new System.Drawing.Size(414, 122);
             this.layoutPanel.TabIndex = 0;
             // 
@@ -60,9 +60,9 @@
             this.nameLabel.Location = new System.Drawing.Point(3, 0);
             this.nameLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 8);
             this.nameLabel.Name = "nameLabel";
-            this.nameLabel.Size = new System.Drawing.Size(114, 29);
+            this.nameLabel.Size = new System.Drawing.Size(114, 24);
             this.nameLabel.TabIndex = 0;
-            this.nameLabel.Text = global::RecurringIntegrationsScheduler.Properties.Resources.NameLabel;
+            this.nameLabel.Text = "Name";
             this.nameLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // nameTextBox
@@ -71,46 +71,46 @@
             this.nameTextBox.Location = new System.Drawing.Point(123, 3);
             this.nameTextBox.MaxLength = 200;
             this.nameTextBox.Name = "nameTextBox";
-            this.nameTextBox.Size = new System.Drawing.Size(288, 31);
+            this.nameTextBox.Size = new System.Drawing.Size(288, 26);
             this.nameTextBox.TabIndex = 1;
             // 
             // hostLabel
             // 
             this.hostLabel.AutoSize = true;
             this.hostLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.hostLabel.Location = new System.Drawing.Point(3, 37);
+            this.hostLabel.Location = new System.Drawing.Point(3, 32);
             this.hostLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 8);
             this.hostLabel.Name = "hostLabel";
-            this.hostLabel.Size = new System.Drawing.Size(114, 29);
+            this.hostLabel.Size = new System.Drawing.Size(114, 24);
             this.hostLabel.TabIndex = 2;
-            this.hostLabel.Text = global::RecurringIntegrationsScheduler.Properties.Resources.Sftp_HostLabel;
+            this.hostLabel.Text = "Host:";
             this.hostLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // hostTextBox
             // 
             this.hostTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.hostTextBox.Location = new System.Drawing.Point(123, 40);
+            this.hostTextBox.Location = new System.Drawing.Point(123, 35);
             this.hostTextBox.MaxLength = 512;
             this.hostTextBox.Name = "hostTextBox";
-            this.hostTextBox.Size = new System.Drawing.Size(288, 31);
+            this.hostTextBox.Size = new System.Drawing.Size(288, 26);
             this.hostTextBox.TabIndex = 3;
             // 
             // portLabel
             // 
             this.portLabel.AutoSize = true;
             this.portLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.portLabel.Location = new System.Drawing.Point(3, 74);
+            this.portLabel.Location = new System.Drawing.Point(3, 64);
             this.portLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 8);
             this.portLabel.Name = "portLabel";
-            this.portLabel.Size = new System.Drawing.Size(114, 40);
+            this.portLabel.Size = new System.Drawing.Size(114, 50);
             this.portLabel.TabIndex = 4;
-            this.portLabel.Text = global::RecurringIntegrationsScheduler.Properties.Resources.Sftp_PortLabel;
+            this.portLabel.Text = "Port:";
             this.portLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // portNumericUpDown
             // 
             this.portNumericUpDown.Dock = System.Windows.Forms.DockStyle.Left;
-            this.portNumericUpDown.Location = new System.Drawing.Point(123, 77);
+            this.portNumericUpDown.Location = new System.Drawing.Point(123, 67);
             this.portNumericUpDown.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -122,7 +122,7 @@
             0,
             0});
             this.portNumericUpDown.Name = "portNumericUpDown";
-            this.portNumericUpDown.Size = new System.Drawing.Size(120, 31);
+            this.portNumericUpDown.Size = new System.Drawing.Size(120, 26);
             this.portNumericUpDown.TabIndex = 5;
             this.portNumericUpDown.Value = new decimal(new int[] {
             22,

@@ -295,6 +295,12 @@
     <EmbeddedResource Include="Forms\JobGroupForm.resx">
       <DependentUpon>JobGroupForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\SftpCredentialForm.resx">
+      <DependentUpon>SftpCredentialForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\SftpServerForm.resx">
+      <DependentUpon>SftpServerForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\UploadJobV3.resx">
       <DependentUpon>UploadJobV3.cs</DependentUpon>
     </EmbeddedResource>

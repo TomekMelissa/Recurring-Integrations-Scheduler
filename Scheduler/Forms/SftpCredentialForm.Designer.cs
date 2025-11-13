@@ -60,13 +60,13 @@
             this.layoutPanel.Location = new System.Drawing.Point(10, 10);
             this.layoutPanel.Name = "layoutPanel";
             this.layoutPanel.RowCount = 6;
-            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this.layoutPanel.Size = new System.Drawing.Size(480, 232);
+            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutPanel.Size = new System.Drawing.Size(480, 265);
             this.layoutPanel.TabIndex = 0;
             // 
             // nameLabel
@@ -76,9 +76,9 @@
             this.nameLabel.Location = new System.Drawing.Point(3, 0);
             this.nameLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 8);
             this.nameLabel.Name = "nameLabel";
-            this.nameLabel.Size = new System.Drawing.Size(134, 29);
+            this.nameLabel.Size = new System.Drawing.Size(134, 24);
             this.nameLabel.TabIndex = 0;
-            this.nameLabel.Text = global::RecurringIntegrationsScheduler.Properties.Resources.NameLabel;
+            this.nameLabel.Text = "Name";
             this.nameLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // nameTextBox
@@ -87,38 +87,38 @@
             this.nameTextBox.Location = new System.Drawing.Point(143, 3);
             this.nameTextBox.MaxLength = 200;
             this.nameTextBox.Name = "nameTextBox";
-            this.nameTextBox.Size = new System.Drawing.Size(334, 31);
+            this.nameTextBox.Size = new System.Drawing.Size(334, 26);
             this.nameTextBox.TabIndex = 1;
             // 
             // usernameLabel
             // 
             this.usernameLabel.AutoSize = true;
             this.usernameLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.usernameLabel.Location = new System.Drawing.Point(3, 37);
+            this.usernameLabel.Location = new System.Drawing.Point(3, 32);
             this.usernameLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 8);
             this.usernameLabel.Name = "usernameLabel";
-            this.usernameLabel.Size = new System.Drawing.Size(134, 29);
+            this.usernameLabel.Size = new System.Drawing.Size(134, 24);
             this.usernameLabel.TabIndex = 2;
-            this.usernameLabel.Text = global::RecurringIntegrationsScheduler.Properties.Resources.Sftp_UsernameLabel;
+            this.usernameLabel.Text = "Username:";
             this.usernameLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // usernameTextBox
             // 
             this.usernameTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.usernameTextBox.Location = new System.Drawing.Point(143, 40);
+            this.usernameTextBox.Location = new System.Drawing.Point(143, 35);
             this.usernameTextBox.MaxLength = 256;
             this.usernameTextBox.Name = "usernameTextBox";
-            this.usernameTextBox.Size = new System.Drawing.Size(334, 31);
+            this.usernameTextBox.Size = new System.Drawing.Size(334, 26);
             this.usernameTextBox.TabIndex = 3;
             // 
             // useKeyCheckBox
             // 
             this.useKeyCheckBox.AutoSize = true;
             this.layoutPanel.SetColumnSpan(this.useKeyCheckBox, 2);
-            this.useKeyCheckBox.Location = new System.Drawing.Point(3, 79);
+            this.useKeyCheckBox.Location = new System.Drawing.Point(3, 69);
             this.useKeyCheckBox.Margin = new System.Windows.Forms.Padding(3, 5, 3, 12);
             this.useKeyCheckBox.Name = "useKeyCheckBox";
-            this.useKeyCheckBox.Size = new System.Drawing.Size(206, 24);
+            this.useKeyCheckBox.Size = new System.Drawing.Size(143, 24);
             this.useKeyCheckBox.TabIndex = 4;
             this.useKeyCheckBox.Text = global::RecurringIntegrationsScheduler.Properties.Resources.Sftp_UsePrivateKey;
             this.useKeyCheckBox.UseVisualStyleBackColor = true;
@@ -128,21 +128,21 @@
             // 
             this.passwordLabel.AutoSize = true;
             this.passwordLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.passwordLabel.Location = new System.Drawing.Point(3, 115);
+            this.passwordLabel.Location = new System.Drawing.Point(3, 105);
             this.passwordLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 8);
             this.passwordLabel.Name = "passwordLabel";
-            this.passwordLabel.Size = new System.Drawing.Size(134, 29);
+            this.passwordLabel.Size = new System.Drawing.Size(134, 24);
             this.passwordLabel.TabIndex = 5;
-            this.passwordLabel.Text = global::RecurringIntegrationsScheduler.Properties.Resources.Sftp_PasswordLabel;
+            this.passwordLabel.Text = "Password:";
             this.passwordLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // passwordTextBox
             // 
             this.passwordTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.passwordTextBox.Location = new System.Drawing.Point(143, 118);
+            this.passwordTextBox.Location = new System.Drawing.Point(143, 108);
             this.passwordTextBox.MaxLength = 512;
             this.passwordTextBox.Name = "passwordTextBox";
-            this.passwordTextBox.Size = new System.Drawing.Size(334, 31);
+            this.passwordTextBox.Size = new System.Drawing.Size(334, 26);
             this.passwordTextBox.TabIndex = 6;
             this.passwordTextBox.UseSystemPasswordChar = true;
             // 
@@ -150,12 +150,12 @@
             // 
             this.keyPathLabel.AutoSize = true;
             this.keyPathLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.keyPathLabel.Location = new System.Drawing.Point(3, 152);
+            this.keyPathLabel.Location = new System.Drawing.Point(3, 137);
             this.keyPathLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 8);
             this.keyPathLabel.Name = "keyPathLabel";
-            this.keyPathLabel.Size = new System.Drawing.Size(134, 34);
+            this.keyPathLabel.Size = new System.Drawing.Size(134, 76);
             this.keyPathLabel.TabIndex = 7;
-            this.keyPathLabel.Text = global::RecurringIntegrationsScheduler.Properties.Resources.Sftp_KeyFileLabel;
+            this.keyPathLabel.Text = "Key file:";
             this.keyPathLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // keyPathPanel
@@ -164,10 +164,10 @@
             this.keyPathPanel.Controls.Add(this.keyPathTextBox);
             this.keyPathPanel.Controls.Add(this.keyBrowseButton);
             this.keyPathPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.keyPathPanel.Location = new System.Drawing.Point(143, 155);
+            this.keyPathPanel.Location = new System.Drawing.Point(143, 140);
             this.keyPathPanel.Margin = new System.Windows.Forms.Padding(3, 3, 3, 8);
             this.keyPathPanel.Name = "keyPathPanel";
-            this.keyPathPanel.Size = new System.Drawing.Size(334, 28);
+            this.keyPathPanel.Size = new System.Drawing.Size(334, 73);
             this.keyPathPanel.TabIndex = 8;
             // 
             // keyPathTextBox
@@ -175,15 +175,15 @@
             this.keyPathTextBox.Location = new System.Drawing.Point(3, 3);
             this.keyPathTextBox.MaxLength = 1024;
             this.keyPathTextBox.Name = "keyPathTextBox";
-            this.keyPathTextBox.Size = new System.Drawing.Size(246, 31);
+            this.keyPathTextBox.Size = new System.Drawing.Size(246, 26);
             this.keyPathTextBox.TabIndex = 0;
             // 
             // keyBrowseButton
             // 
             this.keyBrowseButton.AutoSize = true;
-            this.keyBrowseButton.Location = new System.Drawing.Point(255, 3);
+            this.keyBrowseButton.Location = new System.Drawing.Point(3, 35);
             this.keyBrowseButton.Name = "keyBrowseButton";
-            this.keyBrowseButton.Size = new System.Drawing.Size(75, 35);
+            this.keyBrowseButton.Size = new System.Drawing.Size(84, 35);
             this.keyBrowseButton.TabIndex = 1;
             this.keyBrowseButton.Text = global::RecurringIntegrationsScheduler.Properties.Resources.Sftp_BrowseButton;
             this.keyBrowseButton.UseVisualStyleBackColor = true;
@@ -193,21 +193,21 @@
             // 
             this.keyPassphraseLabel.AutoSize = true;
             this.keyPassphraseLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.keyPassphraseLabel.Location = new System.Drawing.Point(3, 194);
+            this.keyPassphraseLabel.Location = new System.Drawing.Point(3, 221);
             this.keyPassphraseLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 8);
             this.keyPassphraseLabel.Name = "keyPassphraseLabel";
-            this.keyPassphraseLabel.Size = new System.Drawing.Size(134, 30);
+            this.keyPassphraseLabel.Size = new System.Drawing.Size(134, 36);
             this.keyPassphraseLabel.TabIndex = 9;
-            this.keyPassphraseLabel.Text = global::RecurringIntegrationsScheduler.Properties.Resources.Sftp_KeyPassphraseLabel;
+            this.keyPassphraseLabel.Text = "Key passphrase:";
             this.keyPassphraseLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // keyPassphraseTextBox
             // 
             this.keyPassphraseTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.keyPassphraseTextBox.Location = new System.Drawing.Point(143, 197);
+            this.keyPassphraseTextBox.Location = new System.Drawing.Point(143, 224);
             this.keyPassphraseTextBox.MaxLength = 512;
             this.keyPassphraseTextBox.Name = "keyPassphraseTextBox";
-            this.keyPassphraseTextBox.Size = new System.Drawing.Size(334, 31);
+            this.keyPassphraseTextBox.Size = new System.Drawing.Size(334, 26);
             this.keyPassphraseTextBox.TabIndex = 10;
             this.keyPassphraseTextBox.UseSystemPasswordChar = true;
             // 
@@ -218,7 +218,7 @@
             this.buttonPanel.Controls.Add(this.okButton);
             this.buttonPanel.Controls.Add(this.cancelButton);
             this.buttonPanel.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-            this.buttonPanel.Location = new System.Drawing.Point(250, 263);
+            this.buttonPanel.Location = new System.Drawing.Point(250, 284);
             this.buttonPanel.Name = "buttonPanel";
             this.buttonPanel.Size = new System.Drawing.Size(240, 44);
             this.buttonPanel.TabIndex = 1;
@@ -255,7 +255,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(500, 317);
+            this.ClientSize = new System.Drawing.Size(500, 338);
             this.Controls.Add(this.buttonPanel);
             this.Controls.Add(this.layoutPanel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;

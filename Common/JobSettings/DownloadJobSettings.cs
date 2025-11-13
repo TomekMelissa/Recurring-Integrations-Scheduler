@@ -30,14 +30,14 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
 
             base.Initialize(context);
 
-            var activityIdStr = dataMap.GetString(SettingsConstants.ActivityId);
+            var activityIdStr = GetOptionalString(dataMap, SettingsConstants.ActivityId);
             if (!Guid.TryParse(activityIdStr, out Guid activityIdGuid) || (Guid.Empty == activityIdGuid))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Activity_Id_of_recurring_job_is_missing_or_is_not_a_GUID_in_job_configuration));
             }
             ActivityId = activityIdGuid;
 
-            DownloadSuccessDir = dataMap.GetString(SettingsConstants.DownloadSuccessDir);
+            DownloadSuccessDir = GetOptionalString(dataMap, SettingsConstants.DownloadSuccessDir);
             if (!string.IsNullOrEmpty(DownloadSuccessDir))
             {
                 try
@@ -54,7 +54,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Download_success_directory_is_missing_in_job_configuration));
             }
 
-            DownloadErrorsDir = dataMap.GetString(SettingsConstants.DownloadErrorsDir);
+            DownloadErrorsDir = GetOptionalString(dataMap, SettingsConstants.DownloadErrorsDir);
             if (!string.IsNullOrEmpty(DownloadErrorsDir))
             {
                 try
@@ -71,13 +71,13 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Download_errors_directory_is_missing_in_job_configuration));
             }
 
-            UnzipPackage = dataMap.GetBooleanValue(SettingsConstants.UnzipPackage);
+            UnzipPackage = GetOptionalBoolean(dataMap, SettingsConstants.UnzipPackage);
 
-            AddTimestamp = dataMap.GetBooleanValue(SettingsConstants.AddTimestamp);
+            AddTimestamp = GetOptionalBoolean(dataMap, SettingsConstants.AddTimestamp);
 
-            DeletePackage = dataMap.GetBooleanValue(SettingsConstants.DeletePackage);
+            DeletePackage = GetOptionalBoolean(dataMap, SettingsConstants.DeletePackage);
 
-            UseSftpOutbound = dataMap.GetBooleanValue(SettingsConstants.UseSftpOutbound);
+            UseSftpOutbound = GetOptionalBoolean(dataMap, SettingsConstants.UseSftpOutbound);
             if (UseSftpOutbound)
             {
                 OutboundSftpConfiguration = ReadSftpConfiguration(

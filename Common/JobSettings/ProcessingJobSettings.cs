@@ -28,7 +28,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
 
             base.Initialize(context);
 
-            var activityIdStr = dataMap.GetString(SettingsConstants.ActivityId);
+            var activityIdStr = GetOptionalString(dataMap, SettingsConstants.ActivityId);
             if (!Guid.TryParse(activityIdStr, out Guid activityIdGuid) || (Guid.Empty == activityIdGuid))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Activity_Id_of_recurring_job_is_missing_or_is_not_a_GUID_in_job_configuration));
@@ -36,7 +36,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
 
             ActivityId = activityIdGuid;
 
-            UploadSuccessDir = dataMap.GetString(SettingsConstants.UploadSuccessDir);
+            UploadSuccessDir = GetOptionalString(dataMap, SettingsConstants.UploadSuccessDir);
             if (!string.IsNullOrEmpty(UploadSuccessDir))
             {
                 try
@@ -53,7 +53,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Upload_success_directory_is_missing_in_job_configuration));
             }
 
-            ProcessingSuccessDir = dataMap.GetString(SettingsConstants.ProcessingSuccessDir);
+            ProcessingSuccessDir = GetOptionalString(dataMap, SettingsConstants.ProcessingSuccessDir);
             if (!string.IsNullOrEmpty(ProcessingSuccessDir))
             {
                 try
@@ -70,7 +70,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Processing_success_directory_is_missing_in_job_configuration));
             }
 
-            ProcessingErrorsDir = dataMap.GetString(SettingsConstants.ProcessingErrorsDir);
+            ProcessingErrorsDir = GetOptionalString(dataMap, SettingsConstants.ProcessingErrorsDir);
             if (!string.IsNullOrEmpty(ProcessingErrorsDir))
             {
                 try
@@ -87,13 +87,13 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Processing_errors_directory_is_missing_in_job_configuration));
             }
 
-            StatusFileExtension = dataMap.GetString("StatusFileExtension");
+            StatusFileExtension = GetOptionalString(dataMap, "StatusFileExtension");
             if (string.IsNullOrEmpty(StatusFileExtension))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Extension_of_status_files_is_missing_in_job_configuration));
             }
 
-            StatusCheckInterval = dataMap.GetInt(SettingsConstants.DelayBetweenStatusCheck);
+            StatusCheckInterval = GetOptionalInt(dataMap, SettingsConstants.DelayBetweenStatusCheck);
         }
 
         #region Members

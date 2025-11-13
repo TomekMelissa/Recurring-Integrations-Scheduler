@@ -29,7 +29,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
         {
             var dataMap = context.JobDetail.JobDataMap;
 
-            AosUri = dataMap.GetString(SettingsConstants.AosUri);
+            AosUri = GetOptionalString(dataMap, SettingsConstants.AosUri);
             if (string.IsNullOrEmpty(AosUri))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.AOS_URL_is_missing_in_job_configuration));
@@ -37,19 +37,26 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
             //remove trailing slash if any
             AosUri = AosUri.TrimEnd('/');
 
-            AzureAuthEndpoint = dataMap.GetString(SettingsConstants.AzureAuthEndpoint);
+            AzureAuthEndpoint = GetOptionalString(dataMap, SettingsConstants.AzureAuthEndpoint);
             if (string.IsNullOrEmpty(AzureAuthEndpoint))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Azure_authentication_endpoint_URL_is_missing_in_job_configuration));
             }
 
-            AadTenant = dataMap.GetString(SettingsConstants.AadTenant);
+            AadTenant = GetOptionalString(dataMap, SettingsConstants.AadTenant);
             if (string.IsNullOrEmpty(AadTenant))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.AAD_tenant_id_is_missing_in_job_configuration));
             }
 
-            UseADAL = dataMap.GetBooleanValue(SettingsConstants.UseADAL);
+            if (dataMap.ContainsKey(SettingsConstants.UseADAL))
+            {
+                UseADAL = GetOptionalBoolean(dataMap, SettingsConstants.UseADAL);
+            }
+            else
+            {
+                UseADAL = false;
+            }
             if (UseADAL)
             {
                 Log.WarnFormat(CultureInfo.InvariantCulture,
@@ -58,9 +65,9 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 UseADAL = false;
             }
 
-            UseServiceAuthentication = dataMap.GetBooleanValue(SettingsConstants.UseServiceAuthentication);
+            UseServiceAuthentication = GetOptionalBoolean(dataMap, SettingsConstants.UseServiceAuthentication);
 
-            var aadClientIdStr = dataMap.GetString(SettingsConstants.AadClientId);
+            var aadClientIdStr = GetOptionalString(dataMap, SettingsConstants.AadClientId);
             if (!Guid.TryParse(aadClientIdStr, out Guid aadClientGuid) || (Guid.Empty == aadClientGuid))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Azure_application_client_id_is_missing_or_is_not_a_GUID_in_job_configuration));
@@ -69,7 +76,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
 
             if (UseServiceAuthentication)
             {
-                AadClientSecret = dataMap.GetString(SettingsConstants.AadClientSecret);
+                AadClientSecret = GetOptionalString(dataMap, SettingsConstants.AadClientSecret);
                 if (string.IsNullOrEmpty(AadClientSecret))
                 {
                     throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Azure_web_application_secret_is_missing_in_job_configuration));
@@ -78,13 +85,13 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
             }
             else
             {
-                UserName = dataMap.GetString(SettingsConstants.UserName);
+                UserName = GetOptionalString(dataMap, SettingsConstants.UserName);
                 if (string.IsNullOrEmpty(UserName))
                 {
                     throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.User_principal_name_is_missing_in_job_configuration));
                 }
 
-                var encryptedPassword = dataMap.GetString(SettingsConstants.UserPassword);
+                var encryptedPassword = GetOptionalString(dataMap, SettingsConstants.UserPassword);
                 if (string.IsNullOrEmpty(encryptedPassword))
                 {
                     throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.User_password_is_missing_in_job_configuration));
@@ -93,99 +100,99 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 SetUserPassword(decryptedPassword);
             }
 
-            DelayBetweenFiles = dataMap.GetInt(SettingsConstants.DelayBetweenFiles);
+            DelayBetweenFiles = GetOptionalInt(dataMap, SettingsConstants.DelayBetweenFiles);
 
-            RetryCount = dataMap.GetInt(SettingsConstants.RetryCount);
+            RetryCount = GetOptionalInt(dataMap, SettingsConstants.RetryCount);
             if (RetryCount == 0) 
             {
                 RetryCount = 1;
             }
 
-            RetryDelay = dataMap.GetInt(SettingsConstants.RetryDelay);
+            RetryDelay = GetOptionalInt(dataMap, SettingsConstants.RetryDelay);
             if (RetryDelay == 0) 
             {
                 RetryDelay = 10; //seconds
             }
 
-            PauseJobOnException = dataMap.GetBooleanValue(SettingsConstants.PauseJobOnException);
+            PauseJobOnException = GetOptionalBoolean(dataMap, SettingsConstants.PauseJobOnException);
 
-            IndefinitePause = dataMap.GetBooleanValue(SettingsConstants.IndefinitePause);
+            IndefinitePause = GetOptionalBoolean(dataMap, SettingsConstants.IndefinitePause);
 
-            ImportFromPackageActionPath = dataMap.GetString(SettingsConstants.ImportFromPackageActionPath);
+            ImportFromPackageActionPath = GetOptionalString(dataMap, SettingsConstants.ImportFromPackageActionPath);
             if (string.IsNullOrEmpty(ImportFromPackageActionPath))
             {
                 ImportFromPackageActionPath = PackageApiActions.ImportFromPackageActionPath;
             }
 
-            GetAzureWriteUrlActionPath = dataMap.GetString(SettingsConstants.GetAzureWriteUrlActionPath);
+            GetAzureWriteUrlActionPath = GetOptionalString(dataMap, SettingsConstants.GetAzureWriteUrlActionPath);
             if (string.IsNullOrEmpty(GetAzureWriteUrlActionPath))
             {
                 GetAzureWriteUrlActionPath = PackageApiActions.GetAzureWriteUrlActionPath;
             }
 
-            GetExecutionSummaryStatusActionPath = dataMap.GetString(SettingsConstants.GetExecutionSummaryStatusActionPath);
+            GetExecutionSummaryStatusActionPath = GetOptionalString(dataMap, SettingsConstants.GetExecutionSummaryStatusActionPath);
             if (string.IsNullOrEmpty(GetExecutionSummaryStatusActionPath))
             {
                 GetExecutionSummaryStatusActionPath = PackageApiActions.GetExecutionSummaryStatusActionPath;
             }
 
-            GetExportedPackageUrlActionPath = dataMap.GetString(SettingsConstants.GetExportedPackageUrlActionPath);
+            GetExportedPackageUrlActionPath = GetOptionalString(dataMap, SettingsConstants.GetExportedPackageUrlActionPath);
             if (string.IsNullOrEmpty(GetExportedPackageUrlActionPath))
             {
                 GetExportedPackageUrlActionPath = PackageApiActions.GetExportedPackageUrlActionPath;
             }
 
-            GetExecutionSummaryPageUrlActionPath = dataMap.GetString(SettingsConstants.GetExecutionSummaryPageUrlActionPath);
+            GetExecutionSummaryPageUrlActionPath = GetOptionalString(dataMap, SettingsConstants.GetExecutionSummaryPageUrlActionPath);
             if (string.IsNullOrEmpty(GetExecutionSummaryPageUrlActionPath))
             {
                 GetExecutionSummaryPageUrlActionPath = PackageApiActions.GetExecutionSummaryPageUrlActionPath;
             }
 
-            DeleteExecutionHistoryJobActionPath = dataMap.GetString(SettingsConstants.DeleteExecutionHistoryJobActionPath);
+            DeleteExecutionHistoryJobActionPath = GetOptionalString(dataMap, SettingsConstants.DeleteExecutionHistoryJobActionPath);
             if (string.IsNullOrEmpty(DeleteExecutionHistoryJobActionPath))
             {
                 DeleteExecutionHistoryJobActionPath = PackageApiActions.DeleteExecutionHistoryJobActionPath;
             }
 
-            ExportToPackageActionPath = dataMap.GetString(SettingsConstants.ExportToPackageActionPath);
+            ExportToPackageActionPath = GetOptionalString(dataMap, SettingsConstants.ExportToPackageActionPath);
             if (string.IsNullOrEmpty(ExportToPackageActionPath))
             {
                 ExportToPackageActionPath = PackageApiActions.ExportToPackageActionPath;
             }
 
-            ExportFromPackageActionPath = dataMap.GetString(SettingsConstants.ExportFromPackageActionPath);
+            ExportFromPackageActionPath = GetOptionalString(dataMap, SettingsConstants.ExportFromPackageActionPath);
             if (string.IsNullOrEmpty(ExportFromPackageActionPath))
             {
                 ExportFromPackageActionPath = PackageApiActions.ExportFromPackageActionPath;
             }
 
-            GetMessageStatusActionPath = dataMap.GetString(SettingsConstants.GetMessageStatusActionPath);
+            GetMessageStatusActionPath = GetOptionalString(dataMap, SettingsConstants.GetMessageStatusActionPath);
             if (string.IsNullOrEmpty(GetMessageStatusActionPath))
             {
                 GetMessageStatusActionPath = PackageApiActions.GetMessageStatusActionPath;
             }
 
-            GetImportTargetErrorKeysFileUrlPath = dataMap.GetString(SettingsConstants.GetImportTargetErrorKeysFileUrlPath);
+            GetImportTargetErrorKeysFileUrlPath = GetOptionalString(dataMap, SettingsConstants.GetImportTargetErrorKeysFileUrlPath);
             if (string.IsNullOrEmpty(GetImportTargetErrorKeysFileUrlPath))
             {
                 GetImportTargetErrorKeysFileUrlPath = PackageApiActions.GetImportTargetErrorKeysFileUrlPath;
             }
 
-            GenerateImportTargetErrorKeysFilePath = dataMap.GetString(SettingsConstants.GenerateImportTargetErrorKeysFilePath);
+            GenerateImportTargetErrorKeysFilePath = GetOptionalString(dataMap, SettingsConstants.GenerateImportTargetErrorKeysFilePath);
             if (string.IsNullOrEmpty(GenerateImportTargetErrorKeysFilePath))
             {
                 GenerateImportTargetErrorKeysFilePath = PackageApiActions.GenerateImportTargetErrorKeysFilePath;
             }
 
-            GetExecutionErrorsPath = dataMap.GetString(SettingsConstants.GetExecutionErrorsPath);
+            GetExecutionErrorsPath = GetOptionalString(dataMap, SettingsConstants.GetExecutionErrorsPath);
             if (string.IsNullOrEmpty(GetExecutionErrorsPath))
             {
                 GetExecutionErrorsPath = PackageApiActions.GetExecutionErrorsPath;
             }
 
-            GetExecutionErrors = dataMap.GetBooleanValue(SettingsConstants.GetExecutionErrors);
+            GetExecutionErrors = GetOptionalBoolean(dataMap, SettingsConstants.GetExecutionErrors);
 
-            LogVerbose = dataMap.GetBooleanValue(SettingsConstants.LogVerbose);
+            LogVerbose = GetOptionalBoolean(dataMap, SettingsConstants.LogVerbose);
 
             JobKey = context.JobDetail.Key.ToString();
         }
@@ -429,6 +436,21 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
             return string.IsNullOrWhiteSpace(encrypted) ? null : EncryptDecrypt.Decrypt(encrypted);
         }
 
+        protected static string GetOptionalString(JobDataMap map, string key)
+        {
+            return map.ContainsKey(key) ? map.GetString(key) : null;
+        }
+
+        protected static bool GetOptionalBoolean(JobDataMap map, string key, bool defaultValue = false)
+        {
+            return map.ContainsKey(key) ? map.GetBooleanValue(key) : defaultValue;
+        }
+
+        protected static int GetOptionalInt(JobDataMap map, string key, int defaultValue = 0)
+        {
+            return map.ContainsKey(key) ? map.GetInt(key) : defaultValue;
+        }
+
         protected SftpConfiguration ReadSftpConfiguration(
             JobDataMap dataMap,
             string hostKey,
@@ -441,20 +463,20 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
             string remoteFolderKey,
             string fileMaskKey)
         {
-            var host = dataMap.GetString(hostKey);
+            var host = GetOptionalString(dataMap, hostKey);
             if (string.IsNullOrWhiteSpace(host))
             {
                 return null;
             }
 
-            var port = dataMap.GetInt(portKey);
-            var username = dataMap.GetString(usernameKey);
-            var password = DecryptSecret(dataMap.GetString(passwordKey));
-            var useKey = dataMap.GetBooleanValue(useKeyKey);
-            var keyPath = dataMap.GetString(keyPathKey);
-            var keyPassphrase = DecryptSecret(dataMap.GetString(keyPassphraseKey));
-            var remoteFolder = dataMap.GetString(remoteFolderKey);
-            var fileMask = dataMap.GetString(fileMaskKey);
+            var port = GetOptionalInt(dataMap, portKey);
+            var username = GetOptionalString(dataMap, usernameKey);
+            var password = DecryptSecret(GetOptionalString(dataMap, passwordKey));
+            var useKey = GetOptionalBoolean(dataMap, useKeyKey);
+            var keyPath = GetOptionalString(dataMap, keyPathKey);
+            var keyPassphrase = DecryptSecret(GetOptionalString(dataMap, keyPassphraseKey));
+            var remoteFolder = GetOptionalString(dataMap, remoteFolderKey);
+            var fileMask = GetOptionalString(dataMap, fileMaskKey);
 
             return new SftpConfiguration(
                 host,

@@ -28,7 +28,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
 
             base.Initialize(context);
 
-            InputDir = dataMap.GetString(SettingsConstants.InputDir);
+            InputDir = GetOptionalString(dataMap, SettingsConstants.InputDir);
             if (!string.IsNullOrEmpty(InputDir))
             {
                 try
@@ -45,7 +45,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Input_directory_is_missing_in_job_configuration));
             }
 
-            UploadSuccessDir = dataMap.GetString(SettingsConstants.UploadSuccessDir);
+            UploadSuccessDir = GetOptionalString(dataMap, SettingsConstants.UploadSuccessDir);
             if (!string.IsNullOrEmpty(UploadSuccessDir))
             {
                 try
@@ -62,7 +62,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Upload_success_directory_is_missing_in_job_configuration));
             }
 
-            UploadErrorsDir = dataMap.GetString(SettingsConstants.UploadErrorsDir);
+            UploadErrorsDir = GetOptionalString(dataMap, SettingsConstants.UploadErrorsDir);
             if (!string.IsNullOrEmpty(UploadErrorsDir))
             {
                 try
@@ -79,27 +79,27 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Upload_errors_directory_is_missing_in_job_configuration));
             }
 
-            ExecutionJobPresent = dataMap.GetBooleanValue(SettingsConstants.ExecutionJobPresent);
+            ExecutionJobPresent = GetOptionalBoolean(dataMap, SettingsConstants.ExecutionJobPresent);
 
-            MultiCompanyImport = dataMap.GetBooleanValue(SettingsConstants.MultiCompanyImport);
+            MultiCompanyImport = GetOptionalBoolean(dataMap, SettingsConstants.MultiCompanyImport);
 
-            GetLegalEntityFromSubfolder = dataMap.GetBooleanValue(SettingsConstants.GetLegalEntityFromSubfolder);
+            GetLegalEntityFromSubfolder = GetOptionalBoolean(dataMap, SettingsConstants.GetLegalEntityFromSubfolder);
 
-            GetLegalEntityFromFilename = dataMap.GetBooleanValue(SettingsConstants.GetLegalEntityFromFilename);
+            GetLegalEntityFromFilename = GetOptionalBoolean(dataMap, SettingsConstants.GetLegalEntityFromFilename);
 
-            Company = dataMap.GetString(SettingsConstants.Company);
+            Company = GetOptionalString(dataMap, SettingsConstants.Company);
             if (!MultiCompanyImport && string.IsNullOrEmpty(Company))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Company_is_missing_in_job_configuration));
             }
 
-            StatusFileExtension = dataMap.GetString(SettingsConstants.StatusFileExtension);
+            StatusFileExtension = GetOptionalString(dataMap, SettingsConstants.StatusFileExtension);
             if (string.IsNullOrEmpty(StatusFileExtension))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Extension_of_status_files_is_missing_in_job_configuration));
             }
 
-            SearchPattern = dataMap.GetString(SettingsConstants.SearchPattern);
+            SearchPattern = GetOptionalString(dataMap, SettingsConstants.SearchPattern);
             if (string.IsNullOrEmpty(SearchPattern))
             {
                 SearchPattern = "*.*";
@@ -107,26 +107,26 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
 
             try
             {
-                OrderBy = (OrderByOptions)Enum.Parse(typeof(OrderByOptions), dataMap.GetString(SettingsConstants.OrderBy));
+                OrderBy = (OrderByOptions)Enum.Parse(typeof(OrderByOptions), GetOptionalString(dataMap, SettingsConstants.OrderBy));
             }
             catch
             {
                 OrderBy = OrderByOptions.Created;
             }
 
-            ReverseOrder = dataMap.GetBooleanValue(SettingsConstants.ReverseOrder);
+            ReverseOrder = GetOptionalBoolean(dataMap, SettingsConstants.ReverseOrder);
 
-            DataProject = dataMap.GetString(SettingsConstants.DataProject);
+            DataProject = GetOptionalString(dataMap, SettingsConstants.DataProject);
             if (string.IsNullOrEmpty(DataProject))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Data_project_is_missing_in_job_configuration));
             }
 
-            OverwriteDataProject = dataMap.GetBooleanValue(SettingsConstants.OverwriteDataProject);
+            OverwriteDataProject = GetOptionalBoolean(dataMap, SettingsConstants.OverwriteDataProject);
 
-            ExecuteImport = dataMap.GetBooleanValue(SettingsConstants.ExecuteImport);
+            ExecuteImport = GetOptionalBoolean(dataMap, SettingsConstants.ExecuteImport);
 
-            PackageTemplate = dataMap.GetString(SettingsConstants.PackageTemplate);
+            PackageTemplate = GetOptionalString(dataMap, SettingsConstants.PackageTemplate);
             if (!string.IsNullOrEmpty(PackageTemplate))
             {
                 try
@@ -142,17 +142,17 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 }
             }
 
-            FilenameSeparator = dataMap.GetString(SettingsConstants.FilenameSeparator);
+            FilenameSeparator = GetOptionalString(dataMap, SettingsConstants.FilenameSeparator);
             if (GetLegalEntityFromFilename && string.IsNullOrEmpty(FilenameSeparator))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.no_separator));
             }
 
-            LegalEntityTokenPosition = dataMap.GetInt(SettingsConstants.LegalEntityTokenPosition);
+            LegalEntityTokenPosition = GetOptionalInt(dataMap, SettingsConstants.LegalEntityTokenPosition);
 
-            InputFilesArePackages = dataMap.GetBooleanValue(SettingsConstants.InputFilesArePackages);
+            InputFilesArePackages = GetOptionalBoolean(dataMap, SettingsConstants.InputFilesArePackages);
 
-            UseSftpInbound = dataMap.GetBooleanValue(SettingsConstants.UseSftpInbound);
+            UseSftpInbound = GetOptionalBoolean(dataMap, SettingsConstants.UseSftpInbound);
             if (UseSftpInbound)
             {
                 InboundSftpConfiguration = ReadSftpConfiguration(

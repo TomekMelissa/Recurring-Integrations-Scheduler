@@ -28,7 +28,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
 
             base.Initialize(context);
 
-            DownloadSuccessDir = dataMap.GetString(SettingsConstants.DownloadSuccessDir);
+            DownloadSuccessDir = GetOptionalString(dataMap, SettingsConstants.DownloadSuccessDir);
             if (!string.IsNullOrEmpty(DownloadSuccessDir))
             {
                 try
@@ -45,7 +45,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Download_success_directory_is_missing_in_job_configuration));
             }
 
-            DownloadErrorsDir = dataMap.GetString(SettingsConstants.DownloadErrorsDir);
+            DownloadErrorsDir = GetOptionalString(dataMap, SettingsConstants.DownloadErrorsDir);
             if (!string.IsNullOrEmpty(DownloadErrorsDir))
             {
                 try
@@ -62,13 +62,13 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Download_errors_directory_is_missing_in_job_configuration));
             }
 
-            UnzipPackage = dataMap.GetBooleanValue(SettingsConstants.UnzipPackage);
+            UnzipPackage = GetOptionalBoolean(dataMap, SettingsConstants.UnzipPackage);
 
-            AddTimestamp = dataMap.GetBooleanValue(SettingsConstants.AddTimestamp);
+            AddTimestamp = GetOptionalBoolean(dataMap, SettingsConstants.AddTimestamp);
 
-            DeletePackage = dataMap.GetBooleanValue(SettingsConstants.DeletePackage);
+            DeletePackage = GetOptionalBoolean(dataMap, SettingsConstants.DeletePackage);
 
-            UseSftpOutbound = dataMap.GetBooleanValue(SettingsConstants.UseSftpOutbound);
+            UseSftpOutbound = GetOptionalBoolean(dataMap, SettingsConstants.UseSftpOutbound);
             if (UseSftpOutbound)
             {
                 OutboundSftpConfiguration = ReadSftpConfiguration(
@@ -90,21 +90,21 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 }
             }
 
-            DataProject = dataMap.GetString(SettingsConstants.DataProject);
+            DataProject = GetOptionalString(dataMap, SettingsConstants.DataProject);
 
             if (string.IsNullOrEmpty(DataProject))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Data_project_is_missing_in_job_configuration));
             }
 
-            Company = dataMap.GetString(SettingsConstants.Company);
+            Company = GetOptionalString(dataMap, SettingsConstants.Company);
 
             if (string.IsNullOrEmpty(Company))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Company_is_missing_in_job_configuration));
             }
 
-            DelayBetweenStatusCheck = dataMap.GetInt(SettingsConstants.DelayBetweenStatusCheck);
+            DelayBetweenStatusCheck = GetOptionalInt(dataMap, SettingsConstants.DelayBetweenStatusCheck);
         }
 
         #region Members

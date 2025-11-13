@@ -28,14 +28,14 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
 
             base.Initialize(context);
 
-            var activityIdStr = dataMap.GetString(SettingsConstants.ActivityId);
+            var activityIdStr = GetOptionalString(dataMap, SettingsConstants.ActivityId);
             if (!Guid.TryParse(activityIdStr, out Guid activityIdGuid) || (Guid.Empty == activityIdGuid))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Activity_Id_of_recurring_job_is_missing_or_is_not_a_GUID_in_job_configuration));
             }
             ActivityId = activityIdGuid;
 
-            InputDir = dataMap.GetString(SettingsConstants.InputDir);
+            InputDir = GetOptionalString(dataMap, SettingsConstants.InputDir);
             if (!string.IsNullOrEmpty(InputDir))
             {
                 try
@@ -52,7 +52,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Input_directory_is_missing_in_job_configuration));
             }
 
-            UploadSuccessDir = dataMap.GetString(SettingsConstants.UploadSuccessDir);
+            UploadSuccessDir = GetOptionalString(dataMap, SettingsConstants.UploadSuccessDir);
             if (!string.IsNullOrEmpty(UploadSuccessDir))
             {
                 try
@@ -69,7 +69,7 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Upload_success_directory_is_missing_in_job_configuration));
             }
 
-            UploadErrorsDir = dataMap.GetString(SettingsConstants.UploadErrorsDir);
+            UploadErrorsDir = GetOptionalString(dataMap, SettingsConstants.UploadErrorsDir);
             if (!string.IsNullOrEmpty(UploadErrorsDir))
             {
                 try
@@ -86,26 +86,26 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Upload_errors_directory_is_missing_in_job_configuration));
             }
 
-            IsDataPackage = dataMap.GetBooleanValue(SettingsConstants.IsDataPackage);
+            IsDataPackage = GetOptionalBoolean(dataMap, SettingsConstants.IsDataPackage);
 
-            EntityName = dataMap.GetString(SettingsConstants.EntityName);
+            EntityName = GetOptionalString(dataMap, SettingsConstants.EntityName);
             if (!IsDataPackage && string.IsNullOrEmpty(EntityName))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Entity_name_is_missing_in_job_configuration));
             }
 
-            ProcessingJobPresent = dataMap.GetBooleanValue(SettingsConstants.ProcessingJobPresent);
+            ProcessingJobPresent = GetOptionalBoolean(dataMap, SettingsConstants.ProcessingJobPresent);
 
             //Company is not mandatory
-            Company = dataMap.GetString(SettingsConstants.Company);
+            Company = GetOptionalString(dataMap, SettingsConstants.Company);
 
-            StatusFileExtension = dataMap.GetString(SettingsConstants.StatusFileExtension);
+            StatusFileExtension = GetOptionalString(dataMap, SettingsConstants.StatusFileExtension);
             if (string.IsNullOrEmpty(StatusFileExtension))
             {
                 throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture, Resources.Extension_of_status_files_is_missing_in_job_configuration));
             }
 
-            SearchPattern = dataMap.GetString(SettingsConstants.SearchPattern);
+            SearchPattern = GetOptionalString(dataMap, SettingsConstants.SearchPattern);
             if (string.IsNullOrEmpty(SearchPattern))
             {
                 SearchPattern = "*.*";
@@ -113,18 +113,18 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
 
             try
             {
-                OrderBy = (OrderByOptions)Enum.Parse(typeof(OrderByOptions), dataMap.GetString(SettingsConstants.OrderBy));
+                OrderBy = (OrderByOptions)Enum.Parse(typeof(OrderByOptions), GetOptionalString(dataMap, SettingsConstants.OrderBy));
             }
             catch
             {
                 OrderBy = OrderByOptions.Created;
             }
 
-            ReverseOrder = dataMap.GetBooleanValue(SettingsConstants.ReverseOrder);
+            ReverseOrder = GetOptionalBoolean(dataMap, SettingsConstants.ReverseOrder);
 
-            UploadInOrder = dataMap.GetBooleanValue(SettingsConstants.UploadInOrder);
+            UploadInOrder = GetOptionalBoolean(dataMap, SettingsConstants.UploadInOrder);
 
-            UseSftpInbound = dataMap.GetBooleanValue(SettingsConstants.UseSftpInbound);
+            UseSftpInbound = GetOptionalBoolean(dataMap, SettingsConstants.UseSftpInbound);
             if (UseSftpInbound)
             {
                 InboundSftpConfiguration = ReadSftpConfiguration(

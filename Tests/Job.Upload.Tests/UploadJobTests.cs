@@ -7,10 +7,12 @@ using RecurringIntegrationsScheduler.Common.Contracts;
 using RecurringIntegrationsScheduler.Common.Helpers;
 using RecurringIntegrationsScheduler.Tests.TestCommon.Fixtures;
 using RecurringIntegrationsScheduler.Tests.TestCommon.Mocks;
+using RecurringIntegrationsScheduler.Tests.TestCommon.Sftp;
 using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using UploadJobType = RecurringIntegrationsScheduler.Job.Upload;
 
@@ -41,29 +43,20 @@ namespace RecurringIntegrationsScheduler.JobUpload.Tests
             };
             var httpFactory = new DelegatingHttpClientHelperFactory(_ => httpHelper);
 
-            var downloadCallCount = 0;
-            var sftpStub = new StubSftpTransferService
-            {
-                DownloadFilesHandler = (config, folder, log) =>
-                {
-                    downloadCallCount++;
-                    var packagePath = Path.Combine(folder, "customers.zip");
-                    File.WriteAllText(packagePath, "payload");
-                    return new[] { packagePath };
-                }
-            };
+            var inboundRemoteFolder = SftpTestEnvironment.PrepareRemoteFolder("UploadJobInbound");
+            SftpTestEnvironment.UploadFile(inboundRemoteFolder, "customers.zip", Encoding.UTF8.GetBytes("payload"));
 
-            var job = new UploadJobType(httpFactory, sftpStub);
-            var context = CreateJobExecutionContext(job, CreateJobDataMap(inputDir, successDir, errorsDir));
+            var job = new UploadJobType(httpFactory, SftpTransferService.Instance);
+            var context = CreateJobExecutionContext(job, CreateJobDataMap(inputDir, successDir, errorsDir, inboundRemoteFolder));
 
             await job.Execute(context);
 
-            Assert.AreEqual(1, downloadCallCount, "SFTP download should be invoked exactly once.");
             Assert.IsTrue(File.Exists(Path.Combine(successDir, "customers.zip")), "Uploaded file should be moved to success folder.");
             Assert.IsFalse(File.Exists(Path.Combine(inputDir, "customers.zip")), "Input file should be moved out of the input folder.");
+            Assert.AreEqual(0, SftpTestEnvironment.ListFiles(inboundRemoteFolder).Count, "Inbound SFTP folder should be empty after download.");
         }
 
-        private static JobDataMap CreateJobDataMap(string inputDir, string successDir, string errorsDir)
+        private static JobDataMap CreateJobDataMap(string inputDir, string successDir, string errorsDir, string remoteInboundFolder)
         {
             var map = new JobDataMap();
             map.Put(SettingsConstants.AosUri, "https://test.operations.dynamics.com");
@@ -86,11 +79,11 @@ namespace RecurringIntegrationsScheduler.JobUpload.Tests
             map.Put(SettingsConstants.RetryCount, 1);
             map.Put(SettingsConstants.RetryDelay, 1);
             map.Put(SettingsConstants.UseSftpInbound, true);
-            map.Put(SettingsConstants.SftpInboundHost, "sftp.contoso.test");
-            map.Put(SettingsConstants.SftpInboundPort, 22);
-            map.Put(SettingsConstants.SftpInboundUsername, "uploader");
-            map.Put(SettingsConstants.SftpInboundPassword, EncryptDecrypt.Encrypt("sftp-secret"));
-            map.Put(SettingsConstants.SftpInboundRemoteFolder, "/inbound/upload");
+            map.Put(SettingsConstants.SftpInboundHost, SftpTestEnvironment.Host);
+            map.Put(SettingsConstants.SftpInboundPort, SftpTestEnvironment.Port);
+            map.Put(SettingsConstants.SftpInboundUsername, SftpTestEnvironment.Username);
+            map.Put(SettingsConstants.SftpInboundPassword, EncryptDecrypt.Encrypt(SftpTestEnvironment.Password));
+            map.Put(SettingsConstants.SftpInboundRemoteFolder, remoteInboundFolder);
             map.Put(SettingsConstants.SftpInboundFileMask, "*.zip");
             map.Put(SettingsConstants.UploadInOrder, true);
             map.Put(SettingsConstants.LogVerbose, false);

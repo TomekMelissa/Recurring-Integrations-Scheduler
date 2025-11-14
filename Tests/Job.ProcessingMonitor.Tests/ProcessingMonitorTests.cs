@@ -83,6 +83,7 @@ namespace RecurringIntegrationsScheduler.JobProcessingMonitor.Tests
                 { SettingsConstants.UseServiceAuthentication, true },
                 { SettingsConstants.AadClientId, Guid.NewGuid().ToString() },
                 { SettingsConstants.AadClientSecret, EncryptDecrypt.Encrypt("secret") },
+                { SettingsConstants.ActivityId, Guid.NewGuid().ToString() },
                 { SettingsConstants.UploadSuccessDir, uploadSuccessDir },
                 { SettingsConstants.ProcessingSuccessDir, processingSuccessDir },
                 { SettingsConstants.ProcessingErrorsDir, processingErrorsDir },

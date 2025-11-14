@@ -27,7 +27,8 @@ namespace RecurringIntegrationsScheduler.JobImport.Tests
             var successDir = Path.Combine(testDataRoot, "FileSystem", "Upload", "Working");
             var errorDir = Path.Combine(testDataRoot, "FileSystem", "Upload", "History");
 
-            var legalEntityFolder = Path.Combine(inputDir, "USMF");
+            const string legalEntity = "USMF";
+            var legalEntityFolder = Path.Combine(inputDir, legalEntity);
             Directory.CreateDirectory(legalEntityFolder);
             var packagePath = Path.Combine(legalEntityFolder, "customers.zip");
             File.WriteAllText(packagePath, "payload");
@@ -75,9 +76,10 @@ namespace RecurringIntegrationsScheduler.JobImport.Tests
 
             Assert.AreEqual(1, blobUploadCallCount, "Blob upload should occur once.");
             Assert.AreEqual(1, importCallCount, "ImportFromPackage should be invoked once.");
-            Assert.AreEqual("USMF", capturedLegalEntity, "Legal entity should be derived from subfolder name.");
+            Assert.AreEqual(legalEntity, capturedLegalEntity, "Legal entity should be derived from subfolder name.");
             Assert.IsFalse(File.Exists(packagePath), "Original package should be moved out of the input folder.");
-            Assert.IsTrue(File.Exists(Path.Combine(successDir, "customers.zip")), "Package should land in the success folder.");
+            var successPackagePath = Path.Combine(successDir, legalEntity, "customers.zip");
+            Assert.IsTrue(File.Exists(successPackagePath), "Package should land in the corresponding success subfolder.");
         }
 
         private static JobDataMap CreateJobDataMap(string inputDir, string successDir, string errorDir)

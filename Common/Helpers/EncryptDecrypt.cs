@@ -9,6 +9,7 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
 {
     public static class EncryptDecrypt
     {
+
         /// <summary>
         /// Decrypts a given string.
         /// </summary>

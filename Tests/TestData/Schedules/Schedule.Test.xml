@@ -16,7 +16,7 @@
       <name>Upload.Customers</name>
       <group>Upload</group>
       <description>Upload customer packages via enqueue/dequeue API.</description>
-      <job-type>RecurringIntegrationsScheduler.Job.Upload, Job.Upload</job-type>
+      <job-type>RecurringIntegrationsScheduler.Job.Upload, RecurringIntegrationsScheduler.Job.Upload</job-type>
       <durable>true</durable>
       <recover>false</recover>
       <job-data-map>
@@ -70,7 +70,7 @@
       <name>Download.Products</name>
       <group>Download</group>
       <description>Downloads staging exports and pushes them to SFTP.</description>
-      <job-type>RecurringIntegrationsScheduler.Job.Download, Job.Download</job-type>
+      <job-type>RecurringIntegrationsScheduler.Job.Download, RecurringIntegrationsScheduler.Job.Download</job-type>
       <durable>true</durable>
       <recover>false</recover>
       <job-data-map>

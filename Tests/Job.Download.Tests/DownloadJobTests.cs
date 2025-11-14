@@ -7,6 +7,7 @@ using RecurringIntegrationsScheduler.Common.Helpers;
 using RecurringIntegrationsScheduler.Tests.TestCommon.Fixtures;
 using RecurringIntegrationsScheduler.Tests.TestCommon.Mocks;
 using RecurringIntegrationsScheduler.Tests.TestCommon.Quartz;
+using RecurringIntegrationsScheduler.Tests.TestCommon.Sftp;
 using System;
 using System.IO;
 using System.Linq;
@@ -90,30 +91,22 @@ namespace RecurringIntegrationsScheduler.JobDownload.Tests
 
             var httpFactory = new DelegatingHttpClientHelperFactory(_ => httpHelper);
 
-            var outboundUploadCount = 0;
-            var sftpStub = new StubSftpTransferService
-            {
-                UploadFileHandler = (config, path, log) =>
-                {
-                    Assert.IsTrue(File.Exists(path), "SFTP upload should receive an existing file path.");
-                    outboundUploadCount++;
-                }
-            };
+            var remoteOutboundFolder = SftpTestEnvironment.PrepareRemoteFolder("DownloadJobOutbound");
 
-            var job = new DownloadJobType(httpFactory, sftpStub);
-            var context = TestSchedulerBuilder.CreateContext(job, CreateJobDataMap(successDir, errorsDir));
+            var job = new DownloadJobType(httpFactory, SftpTransferService.Instance);
+            var context = TestSchedulerBuilder.CreateContext(job, CreateJobDataMap(successDir, errorsDir, remoteOutboundFolder));
 
             await job.Execute(context);
 
-            Assert.AreEqual(1, outboundUploadCount, "Package should be uploaded to outbound SFTP once.");
             Assert.AreEqual(1, ackCallCount, "Download acknowledgement should be sent once.");
             var uploadedDir = Path.Combine(successDir, "Uploaded");
             Assert.IsTrue(Directory.Exists(uploadedDir), "Uploaded folder should be created.");
             Assert.IsTrue(Directory.GetFiles(uploadedDir).Length == 1, "Uploaded folder should contain the delivered package.");
             Assert.IsFalse(Directory.EnumerateFiles(errorsDir, "*.zip").Any(), "No error files should be created.");
+            Assert.AreEqual(1, SftpTestEnvironment.ListFiles(remoteOutboundFolder).Count, "SFTP outbound folder should contain the uploaded package.");
         }
 
-        private static JobDataMap CreateJobDataMap(string successDir, string errorsDir)
+        private static JobDataMap CreateJobDataMap(string successDir, string errorsDir, string remoteOutboundFolder)
         {
             var map = new JobDataMap();
             map.Put(SettingsConstants.AosUri, "https://test.operations.dynamics.com");
@@ -126,11 +119,11 @@ namespace RecurringIntegrationsScheduler.JobDownload.Tests
             map.Put(SettingsConstants.DownloadSuccessDir, successDir);
             map.Put(SettingsConstants.DownloadErrorsDir, errorsDir);
             map.Put(SettingsConstants.UseSftpOutbound, true);
-            map.Put(SettingsConstants.SftpOutboundHost, "sftp.contoso.test");
-            map.Put(SettingsConstants.SftpOutboundPort, 22);
-            map.Put(SettingsConstants.SftpOutboundUsername, "exporter");
-            map.Put(SettingsConstants.SftpOutboundPassword, EncryptDecrypt.Encrypt("secret"));
-            map.Put(SettingsConstants.SftpOutboundRemoteFolder, "/outbound/download");
+            map.Put(SettingsConstants.SftpOutboundHost, SftpTestEnvironment.Host);
+            map.Put(SettingsConstants.SftpOutboundPort, SftpTestEnvironment.Port);
+            map.Put(SettingsConstants.SftpOutboundUsername, SftpTestEnvironment.Username);
+            map.Put(SettingsConstants.SftpOutboundPassword, EncryptDecrypt.Encrypt(SftpTestEnvironment.Password));
+            map.Put(SettingsConstants.SftpOutboundRemoteFolder, remoteOutboundFolder);
             map.Put(SettingsConstants.SftpOutboundFileMask, "*.zip");
             map.Put(SettingsConstants.UnzipPackage, false);
             map.Put(SettingsConstants.AddTimestamp, false);

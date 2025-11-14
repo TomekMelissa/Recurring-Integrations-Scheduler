@@ -14,11 +14,16 @@ namespace RecurringIntegrationsScheduler.Tests.TestCommon.Fixtures
         private const string EncryptedUserPasswordToken = "{{EncryptedUserPassword}}";
         private const string TestDataRootToken = "{{TestDataRoot}}";
 
+        private static bool _rootCleaned;
+        private static readonly object CleanupLock = new object();
+
         /// <summary>
         /// Copies <c>Tests/TestData</c> into a unique temp folder.
         /// </summary>
         public static string MaterializeTestData(string scenarioName)
         {
+            EnsureCleanRoot();
+
             if (string.IsNullOrWhiteSpace(scenarioName))
             {
                 scenarioName = "Scenario";
@@ -32,6 +37,25 @@ namespace RecurringIntegrationsScheduler.Tests.TestCommon.Fixtures
 
             CopyDirectory(FixturePaths.TestDataRoot, tempRoot);
             return tempRoot;
+        }
+
+        private static void EnsureCleanRoot()
+        {
+            if (_rootCleaned)
+            {
+                return;
+            }
+
+            lock (CleanupLock)
+            {
+                if (_rootCleaned)
+                {
+                    return;
+                }
+
+                FixtureCleanup.DeleteAllMaterializedTestData();
+                _rootCleaned = true;
+            }
         }
 
         /// <summary>

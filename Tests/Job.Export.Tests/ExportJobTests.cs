@@ -1,12 +1,12 @@
 ﻿#pragma warning disable MSTEST0037
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 using Quartz;
 using RecurringIntegrationsScheduler.Common.Contracts;
 using RecurringIntegrationsScheduler.Common.Helpers;
 using RecurringIntegrationsScheduler.Tests.TestCommon.Fixtures;
 using RecurringIntegrationsScheduler.Tests.TestCommon.Mocks;
 using RecurringIntegrationsScheduler.Tests.TestCommon.Quartz;
+using RecurringIntegrationsScheduler.Tests.TestCommon.Sftp;
 using System;
 using System.IO;
 using System.Net;
@@ -28,31 +28,34 @@ namespace RecurringIntegrationsScheduler.JobExport.Tests
             var errorDir = Path.Combine(testDataRoot, "FileSystem", "Export", "Delivered");
 
             var blobPayload = Encoding.UTF8.GetBytes("export payload");
-            var executionId = "EXEC-777";
             var exportToPackageResponse = new HttpResponseMessage(HttpStatusCode.OK);
 
             var statusResponses = new[] { "Executing", "Succeeded" };
             var statusIndex = 0;
 
+            static HttpResponseMessage JsonValue(string value)
+            {
+                var payload = $"{{\"value\":\"{value}\"}}";
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(payload, Encoding.UTF8, "application/json")
+                };
+            }
+
             var httpHelper = new StubHttpClientHelper
             {
                 ExportToPackageHandler = (definition, packageName, execId, company, re) =>
                 {
-                    Assert.AreEqual(executionId, packageName);
+                    Assert.AreEqual(packageName, execId, "Export job should use the generated execution id as package name.");
                     return Task.FromResult(exportToPackageResponse);
                 },
                 GetExecutionSummaryStatusHandler = id =>
                 {
                     var status = statusResponses[Math.Min(statusIndex++, statusResponses.Length - 1)];
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                    {
-                        Content = new StringContent(status)
-                    });
+                    return Task.FromResult(JsonValue(status));
                 },
-                GetExportedPackageUrlHandler = id => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent("https://blob.contoso.com/export/package.zip")
-                }),
+                GetExportedPackageUrlHandler = id =>
+                    Task.FromResult(JsonValue("https://blob.contoso.com/export/package.zip")),
                 GetRequestAsyncHandler = (uri, addAuth) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new ByteArrayContent(blobPayload)
@@ -61,26 +64,20 @@ namespace RecurringIntegrationsScheduler.JobExport.Tests
 
             var httpFactory = new DelegatingHttpClientHelperFactory(_ => httpHelper);
 
-            var outboundUploadCount = 0;
-            var sftpStub = new StubSftpTransferService
-            {
-                UploadFileHandler = (config, filePath, log) =>
-                {
-                    outboundUploadCount++;
-                    Assert.IsTrue(File.Exists(filePath));
-                }
-            };
+            var remoteOutboundFolder = SftpTestEnvironment.PrepareRemoteFolder("ExportJobOutbound");
 
-            var job = new ExportJobType(httpFactory, sftpStub);
-            var context = TestSchedulerBuilder.CreateContext(job, CreateJobDataMap(downloadDir, errorDir));
+            var job = new ExportJobType(httpFactory, SftpTransferService.Instance);
+            var context = TestSchedulerBuilder.CreateContext(job, CreateJobDataMap(downloadDir, errorDir, remoteOutboundFolder));
 
             await job.Execute(context);
 
-            Assert.AreEqual(1, outboundUploadCount, "Exported package should be uploaded exactly once.");
-            Assert.AreEqual(1, Directory.GetFiles(downloadDir).Length, "Package should exist in download directory.");
+            var uploadedDir = Path.Combine(downloadDir, "Uploaded");
+            Assert.IsTrue(Directory.Exists(uploadedDir), "Uploaded folder should be created after SFTP push.");
+            Assert.AreEqual(1, Directory.GetFiles(uploadedDir).Length, "Package should exist in the Uploaded folder.");
+            Assert.AreEqual(1, SftpTestEnvironment.ListFiles(remoteOutboundFolder).Count, "SFTP outbound folder should contain the uploaded package.");
         }
 
-        private static JobDataMap CreateJobDataMap(string downloadDir, string errorDir)
+        private static JobDataMap CreateJobDataMap(string downloadDir, string errorDir, string remoteOutboundFolder)
         {
             return new JobDataMap
             {
@@ -99,11 +96,11 @@ namespace RecurringIntegrationsScheduler.JobExport.Tests
                 { SettingsConstants.RetryCount, 1 },
                 { SettingsConstants.RetryDelay, 1 },
                 { SettingsConstants.UseSftpOutbound, true },
-                { SettingsConstants.SftpOutboundHost, "sftp.contoso.test" },
-                { SettingsConstants.SftpOutboundPort, 22 },
-                { SettingsConstants.SftpOutboundUsername, "exporter" },
-                { SettingsConstants.SftpOutboundPassword, EncryptDecrypt.Encrypt("secret") },
-                { SettingsConstants.SftpOutboundRemoteFolder, "/outbound/export" },
+                { SettingsConstants.SftpOutboundHost, SftpTestEnvironment.Host },
+                { SettingsConstants.SftpOutboundPort, SftpTestEnvironment.Port },
+                { SettingsConstants.SftpOutboundUsername, SftpTestEnvironment.Username },
+                { SettingsConstants.SftpOutboundPassword, EncryptDecrypt.Encrypt(SftpTestEnvironment.Password) },
+                { SettingsConstants.SftpOutboundRemoteFolder, remoteOutboundFolder },
                 { SettingsConstants.SftpOutboundFileMask, "*.zip" },
                 { SettingsConstants.AddTimestamp, false },
                 { SettingsConstants.DeletePackage, false },

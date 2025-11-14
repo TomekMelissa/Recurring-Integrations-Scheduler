@@ -10,23 +10,62 @@
     <job>
       <name>Upload.Single</name>
       <group>Upload</group>
-      <job-type>RecurringIntegrationsScheduler.Job.Upload, Job.Upload</job-type>
+      <job-type>RecurringIntegrationsScheduler.Job.Upload, RecurringIntegrationsScheduler.Job.Upload</job-type>
       <durable>true</durable>
       <recover>false</recover>
       <job-data-map>
-        <entry key="AosUri" value="https://test.operations.dynamics.com" />
-        <entry key="AzureAuthEndpoint" value="https://login.microsoftonline.com" />
-        <entry key="AadTenant" value="contoso.onmicrosoft.com" />
-        <entry key="UseServiceAuthentication" value="true" />
-        <entry key="AadClientId" value="aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0001" />
-        <entry key="AadClientSecret" value="{{EncryptedClientSecret}}" />
-        <entry key="ActivityId" value="11111111-2222-3333-4444-555555555555" />
-        <entry key="InputDir" value="{{TestDataRoot}}/FileSystem/Upload/Input" />
-        <entry key="UploadSuccessDir" value="{{TestDataRoot}}/FileSystem/Upload/Working" />
-        <entry key="UploadErrorsDir" value="{{TestDataRoot}}/FileSystem/Upload/History" />
-        <entry key="EntityName" value="CustomerCompositeEntity" />
-        <entry key="StatusFileExtension" value="status" />
-        <entry key="SearchPattern" value="*.zip" />
+        <entry>
+          <key>AosUri</key>
+          <value>https://test.operations.dynamics.com</value>
+        </entry>
+        <entry>
+          <key>AzureAuthEndpoint</key>
+          <value>https://login.microsoftonline.com</value>
+        </entry>
+        <entry>
+          <key>AadTenant</key>
+          <value>contoso.onmicrosoft.com</value>
+        </entry>
+        <entry>
+          <key>UseServiceAuthentication</key>
+          <value>true</value>
+        </entry>
+        <entry>
+          <key>AadClientId</key>
+          <value>aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0001</value>
+        </entry>
+        <entry>
+          <key>AadClientSecret</key>
+          <value>{{EncryptedClientSecret}}</value>
+        </entry>
+        <entry>
+          <key>ActivityId</key>
+          <value>11111111-2222-3333-4444-555555555555</value>
+        </entry>
+        <entry>
+          <key>InputDir</key>
+          <value>{{TestDataRoot}}/FileSystem/Upload/Input</value>
+        </entry>
+        <entry>
+          <key>UploadSuccessDir</key>
+          <value>{{TestDataRoot}}/FileSystem/Upload/Working</value>
+        </entry>
+        <entry>
+          <key>UploadErrorsDir</key>
+          <value>{{TestDataRoot}}/FileSystem/Upload/History</value>
+        </entry>
+        <entry>
+          <key>EntityName</key>
+          <value>CustomerCompositeEntity</value>
+        </entry>
+        <entry>
+          <key>StatusFileExtension</key>
+          <value>status</value>
+        </entry>
+        <entry>
+          <key>SearchPattern</key>
+          <value>*.zip</value>
+        </entry>
       </job-data-map>
     </job>
     <trigger>
@@ -36,27 +75,57 @@
         <job-name>Upload.Single</job-name>
         <job-group>Upload</job-group>
         <repeat-count>-1</repeat-count>
-        <repeat-interval>00:05:00</repeat-interval>
+        <repeat-interval>300000</repeat-interval>
       </simple>
     </trigger>
 
     <job>
       <name>Download.Single</name>
       <group>Download</group>
-      <job-type>RecurringIntegrationsScheduler.Job.Download, Job.Download</job-type>
+      <job-type>RecurringIntegrationsScheduler.Job.Download, RecurringIntegrationsScheduler.Job.Download</job-type>
       <durable>true</durable>
       <recover>false</recover>
       <job-data-map>
-        <entry key="AosUri" value="https://test.operations.dynamics.com" />
-        <entry key="AzureAuthEndpoint" value="https://login.microsoftonline.com" />
-        <entry key="AadTenant" value="contoso.onmicrosoft.com" />
-        <entry key="UseServiceAuthentication" value="false" />
-        <entry key="AadClientId" value="aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0002" />
-        <entry key="UserName" value="exporter@test.contoso.com" />
-        <entry key="UserPassword" value="{{EncryptedUserPassword}}" />
-        <entry key="ActivityId" value="66666666-7777-8888-9999-000000000000" />
-        <entry key="DownloadSuccessDir" value="{{TestDataRoot}}/FileSystem/Download/Dropbox" />
-        <entry key="DownloadErrorsDir" value="{{TestDataRoot}}/FileSystem/Download/Errors" />
+        <entry>
+          <key>AosUri</key>
+          <value>https://test.operations.dynamics.com</value>
+        </entry>
+        <entry>
+          <key>AzureAuthEndpoint</key>
+          <value>https://login.microsoftonline.com</value>
+        </entry>
+        <entry>
+          <key>AadTenant</key>
+          <value>contoso.onmicrosoft.com</value>
+        </entry>
+        <entry>
+          <key>UseServiceAuthentication</key>
+          <value>false</value>
+        </entry>
+        <entry>
+          <key>AadClientId</key>
+          <value>aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0002</value>
+        </entry>
+        <entry>
+          <key>UserName</key>
+          <value>exporter@test.contoso.com</value>
+        </entry>
+        <entry>
+          <key>UserPassword</key>
+          <value>{{EncryptedUserPassword}}</value>
+        </entry>
+        <entry>
+          <key>ActivityId</key>
+          <value>66666666-7777-8888-9999-000000000000</value>
+        </entry>
+        <entry>
+          <key>DownloadSuccessDir</key>
+          <value>{{TestDataRoot}}/FileSystem/Download/Dropbox</value>
+        </entry>
+        <entry>
+          <key>DownloadErrorsDir</key>
+          <value>{{TestDataRoot}}/FileSystem/Download/Errors</value>
+        </entry>
       </job-data-map>
     </job>
     <trigger>
@@ -66,7 +135,7 @@
         <job-name>Download.Single</job-name>
         <job-group>Download</job-group>
         <repeat-count>-1</repeat-count>
-        <repeat-interval>00:10:00</repeat-interval>
+        <repeat-interval>600000</repeat-interval>
       </simple>
     </trigger>
   </schedule>

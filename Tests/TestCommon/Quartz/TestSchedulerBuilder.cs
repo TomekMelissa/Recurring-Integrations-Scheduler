@@ -26,7 +26,7 @@ namespace RecurringIntegrationsScheduler.Tests.TestCommon.Quartz
 
             var bundle = new TriggerFiredBundle(jobDetail, trigger, null, false, DateTimeOffset.UtcNow, null, null, null);
             var scheduler = new Mock<IScheduler>();
-            scheduler.SetupGet(s => s.SchedulerName).Returns(SchedulerContracts.PrivateSchedulerName);
+            scheduler.SetupGet(s => s.SchedulerName).Returns("RIS.UnitTests");
             return new JobExecutionContextImpl(scheduler.Object, bundle, jobInstance);
         }
     }

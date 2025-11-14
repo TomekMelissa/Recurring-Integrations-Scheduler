@@ -1,4 +1,5 @@
-﻿/* Copyright (c) Microsoft Corporation. All rights reserved.
+﻿#nullable enable
+/* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
 using log4net;
@@ -20,7 +21,7 @@ using UrlCombineLib;
 namespace RecurringIntegrationsScheduler.Common.Helpers
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
-    public class HttpClientHelper : IDisposable
+    public class HttpClientHelper : IHttpClientHelper
     {
         private readonly Settings _settings;
         private readonly HttpClient _httpClient;
@@ -75,7 +76,7 @@ Delay between retries: {_settings.RetryDelay} seconds.");
         /// <param name="bodyStream">Body stream</param>
         /// <param name="externalidentifier">ActivityMessage context</param>
         /// <returns></returns>
-        public async Task<HttpResponseMessage> PostStreamRequestAsync(Uri uri, Stream bodyStream, string externalidentifier = null)
+        public async Task<HttpResponseMessage> PostStreamRequestAsync(Uri uri, Stream bodyStream, string? externalidentifier = null)
         {
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Authorization", await _authenticationHelper.GetValidAuthenticationHeader());
@@ -117,7 +118,7 @@ externalidentifier: {externalidentifier}");
         /// <param name="bodyString">Body string</param>
         /// <param name="externalidentifier">Activity Message context</param>
         /// <returns>HTTP response</returns>
-        public async Task<HttpResponseMessage> PostStringRequestAsync(Uri uri, string bodyString, string externalidentifier = null)
+        public async Task<HttpResponseMessage> PostStringRequestAsync(Uri uri, string bodyString, string? externalidentifier = null)
         {
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Authorization", await _authenticationHelper.GetValidAuthenticationHeader());
@@ -185,9 +186,9 @@ addAuthorization: {addAuthorization}");
         /// <returns>
         /// Data job enqueue request Uri
         /// </returns>
-        public Uri GetEnqueueUri(string legalEntity = null)
+        public Uri GetEnqueueUri(string? legalEntity = null)
         {
-            var uploadSettings = _settings as UploadJobSettings;
+            var uploadSettings = EnsureSettings<UploadJobSettings>(nameof(GetEnqueueUri));
             var enqueueUri = new UriBuilder(GetAosRequestUri(UrlCombine.Combine(ConnectorApiActions.EnqueuePath, uploadSettings.ActivityId.ToString())));
             var query = HttpUtility.ParseQueryString(enqueueUri.Query);
 
@@ -232,7 +233,7 @@ Generated query: {enqueueUri.Query}");
         /// </returns>
         public Uri GetDequeueUri()
         {
-            var downloadSettings = _settings as DownloadJobSettings;
+            var downloadSettings = EnsureSettings<DownloadJobSettings>(nameof(GetDequeueUri));
             var dequeueUri = new UriBuilder(GetAosRequestUri(UrlCombine.Combine(ConnectorApiActions.DequeuePath, downloadSettings.ActivityId.ToString()))).Uri;
             if (_settings.LogVerbose || Log.IsDebugEnabled)
             {
@@ -252,7 +253,7 @@ Generated Uri: {dequeueUri.AbsoluteUri}");
         /// </returns>
         public Uri GetAckUri()
         {
-            var downloadSettings = _settings as DownloadJobSettings;
+            var downloadSettings = EnsureSettings<DownloadJobSettings>(nameof(GetAckUri));
             var ackUri = new UriBuilder(GetAosRequestUri(UrlCombine.Combine(ConnectorApiActions.AckPath, downloadSettings.ActivityId.ToString()))).Uri;
             if (_settings.LogVerbose || Log.IsDebugEnabled)
             {
@@ -273,7 +274,7 @@ Generated Uri: {ackUri.AbsoluteUri}");
         /// </returns>
         public Uri GetJobStatusUri(string jobId)
         {
-            var processingJobSettings = _settings as ProcessingJobSettings;
+            var processingJobSettings = EnsureSettings<ProcessingJobSettings>(nameof(GetJobStatusUri));
             var jobStatusUri = new UriBuilder(GetAosRequestUri(UrlCombine.Combine(ConnectorApiActions.JobStatusPath, processingJobSettings.ActivityId.ToString())))
             {
                 Query = "jobId=" + jobId.Replace(@"""", "")
@@ -322,7 +323,7 @@ Uri: {requestUri}
 Response status code: {response.StatusCode}
 Response reason: {response.ReasonPhrase}
 Response message: {response.Content}");
-                return null;
+                throw new HttpRequestException($"HttpClientHelper.GetAzureWriteUrl failed with status code {response.StatusCode}");
             }
             return response;
         }
@@ -843,12 +844,26 @@ Response message: {response.Content}");
             return response;
         }
 
-        private Uri GetAosRequestUri(string requestRelativePath) 
-             {
+        private Uri GetAosRequestUri(string requestRelativePath)
+        {
+            if (string.IsNullOrEmpty(requestRelativePath))
+            {
+                throw new ArgumentNullException(nameof(requestRelativePath));
+            }
+
             var aosUrl = UrlCombine.Combine(_settings.AosUri, requestRelativePath);
-            var aosUri = new Uri(aosUrl); 
-                    return aosUri; 
-             } 
+            return new Uri(aosUrl);
+        }
+
+        private T EnsureSettings<T>(string callerName) where T : Settings
+        {
+            if (_settings is T typedSettings)
+            {
+                return typedSettings;
+            }
+
+            throw new InvalidOperationException($"HttpClientHelper.{callerName} requires settings of type {typeof(T).Name} but current settings are {_settings.GetType().Name}.");
+        }
 
         public static async Task<string> ReadResponseStringAsync(HttpResponseMessage response)
         {

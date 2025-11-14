@@ -36,7 +36,9 @@ namespace RecurringIntegrationsScheduler.Job
         /// <summary>
         /// The HTTP client helper
         /// </summary>
-        private HttpClientHelper _httpClientHelper;
+        private IHttpClientHelper _httpClientHelper;
+        private readonly IHttpClientHelperFactory _httpClientHelperFactory;
+        private readonly ISftpTransferService _sftpTransferService;
 
         /// <summary>
         /// Job execution context
@@ -62,6 +64,16 @@ namespace RecurringIntegrationsScheduler.Job
         /// <see cref="T:Quartz.ITriggerListener" />s that are watching the job's
         /// execution.
         /// </remarks>
+        public Export() : this(HttpClientHelperFactory.Default, SftpTransferService.Instance)
+        {
+        }
+
+        internal Export(IHttpClientHelperFactory httpClientHelperFactory, ISftpTransferService sftpTransferService)
+        {
+            _httpClientHelperFactory = httpClientHelperFactory ?? throw new ArgumentNullException(nameof(httpClientHelperFactory));
+            _sftpTransferService = sftpTransferService ?? throw new ArgumentNullException(nameof(sftpTransferService));
+        }
+
         public async Task Execute(IJobExecutionContext context)
         {
             try
@@ -123,7 +135,7 @@ namespace RecurringIntegrationsScheduler.Job
         /// <returns></returns>
         private async Task Process()
         {
-            using (_httpClientHelper = new HttpClientHelper(_settings))
+            using (_httpClientHelper = _httpClientHelperFactory.Create(_settings))
             {
                 var executionId = $"{_settings.DataProject}-{DateTime.Now:yyyy-MM-dd_HH-mm-ss}-{Guid.NewGuid()}";
                 
@@ -250,7 +262,7 @@ namespace RecurringIntegrationsScheduler.Job
 
             try
             {
-                SftpTransferHelper.UploadFile(_settings.OutboundSftpConfiguration, filePath, Log);
+                _sftpTransferService.UploadFile(_settings.OutboundSftpConfiguration, filePath, Log);
                 return true;
             }
             catch (Exception ex)

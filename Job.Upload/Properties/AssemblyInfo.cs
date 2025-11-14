@@ -2,6 +2,7 @@
    Licensed under the MIT License. */
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
@@ -25,3 +26,5 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 
 [assembly: Guid("8BC9E0C9-4E2E-4109-BD51-1E79BF548EAA")]
+
+[assembly: InternalsVisibleTo("Job.Upload.Tests")]

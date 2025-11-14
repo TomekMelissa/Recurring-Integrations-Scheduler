@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Comprehensive Quartz schedule used by integration tests.
+  Tokens like {{TestDataRoot}}, {{EncryptedClientSecret}}, and {{EncryptedUserPassword}}
+  must be replaced by the test harness before Quartz loads this file.
+-->
+<job-scheduling-data xmlns="http://quartznet.sourceforge.net/JobSchedulingData"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     version="2.0">
+  <processing-directives>
+    <overwrite-existing-data>true</overwrite-existing-data>
+  </processing-directives>
+  <schedule>
+    <!-- Upload job with inbound SFTP -->
+    <job>
+      <name>Upload.Customers</name>
+      <group>Upload</group>
+      <description>Upload customer packages via enqueue/dequeue API.</description>
+      <job-type>RecurringIntegrationsScheduler.Job.Upload, Job.Upload</job-type>
+      <durable>true</durable>
+      <recover>false</recover>
+      <job-data-map>
+        <entry key="AosUri" value="https://test.operations.dynamics.com" />
+        <entry key="AzureAuthEndpoint" value="https://login.microsoftonline.com" />
+        <entry key="AadTenant" value="contoso.onmicrosoft.com" />
+        <entry key="UseServiceAuthentication" value="true" />
+        <entry key="AadClientId" value="aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0001" />
+        <entry key="AadClientSecret" value="{{EncryptedClientSecret}}" />
+        <entry key="ActivityId" value="11111111-2222-3333-4444-555555555555" />
+        <entry key="InputDir" value="{{TestDataRoot}}/FileSystem/Upload/Input" />
+        <entry key="UploadSuccessDir" value="{{TestDataRoot}}/FileSystem/Upload/Working" />
+        <entry key="UploadErrorsDir" value="{{TestDataRoot}}/FileSystem/Upload/History" />
+        <entry key="EntityName" value="CustomerCompositeEntity" />
+        <entry key="IsDataPackage" value="true" />
+        <entry key="ProcessingJobPresent" value="true" />
+        <entry key="Company" value="USMF" />
+        <entry key="StatusFileExtension" value="status" />
+        <entry key="SearchPattern" value="*.zip" />
+        <entry key="OrderBy" value="Created" />
+        <entry key="ReverseOrder" value="false" />
+        <entry key="UploadInOrder" value="true" />
+        <entry key="UseSftpInbound" value="true" />
+        <entry key="SftpInboundHost" value="sftp.contoso.test" />
+        <entry key="SftpInboundPort" value="22" />
+        <entry key="SftpInboundUsername" value="uploader" />
+        <entry key="SftpInboundPassword" value="{{EncryptedUserPassword}}" />
+        <entry key="SftpInboundRemoteFolder" value="/inbound/upload" />
+        <entry key="SftpInboundFileMask" value="*.zip" />
+        <entry key="UseSftpOutbound" value="false" />
+        <entry key="DelayBetweenFiles" value="2" />
+        <entry key="RetryCount" value="3" />
+        <entry key="RetryDelay" value="15" />
+        <entry key="PauseJobOnException" value="false" />
+        <entry key="IndefinitePause" value="false" />
+        <entry key="GetAzureWriteUrlActionPath" value="data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.GetAzureWriteUrl" />
+      </job-data-map>
+    </job>
+    <trigger>
+      <cron>
+        <name>Upload.Customers.Trigger</name>
+        <group>Upload</group>
+        <job-name>Upload.Customers</job-name>
+        <job-group>Upload</job-group>
+        <cron-expression>0 0/5 * * * ?</cron-expression>
+      </cron>
+    </trigger>
+
+    <!-- Download job with outbound SFTP -->
+    <job>
+      <name>Download.Products</name>
+      <group>Download</group>
+      <description>Downloads staging exports and pushes them to SFTP.</description>
+      <job-type>RecurringIntegrationsScheduler.Job.Download, Job.Download</job-type>
+      <durable>true</durable>
+      <recover>false</recover>
+      <job-data-map>
+        <entry key="AosUri" value="https://test.operations.dynamics.com" />
+        <entry key="AzureAuthEndpoint" value="https://login.microsoftonline.com" />
+        <entry key="AadTenant" value="contoso.onmicrosoft.com" />
+        <entry key="UseServiceAuthentication" value="false" />
+        <entry key="AadClientId" value="aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0002" />
+        <entry key="UserName" value="exporter@test.contoso.com" />
+        <entry key="UserPassword" value="{{EncryptedUserPassword}}" />
+        <entry key="ActivityId" value="66666666-7777-8888-9999-000000000000" />
+        <entry key="DownloadSuccessDir" value="{{TestDataRoot}}/FileSystem/Download/Dropbox" />
+        <entry key="DownloadErrorsDir" value="{{TestDataRoot}}/FileSystem/Download/Errors" />
+        <entry key="UnzipPackage" value="true" />
+        <entry key="AddTimestamp" value="true" />
+        <entry key="DeletePackage" value="false" />
+        <entry key="UseSftpOutbound" value="true" />
+        <entry key="SftpOutboundHost" value="sftp.contoso.test" />
+        <entry key="SftpOutboundPort" value="22" />
+        <entry key="SftpOutboundUsername" value="exporter" />
+        <entry key="SftpOutboundPassword" value="{{EncryptedUserPassword}}" />
+        <entry key="SftpOutboundRemoteFolder" value="/outbound/download" />
+        <entry key="SftpOutboundFileMask" value="*.zip" />
+      </job-data-map>
+    </job>
+    <trigger>
+      <simple>
+        <name>Download.Products.Trigger</name>
+        <group>Download</group>
+        <job-name>Download.Products</job-name>
+        <job-group>Download</job-group>
+        <repeat-count>-1</repeat-count>
+        <repeat-interval>00:10:00</repeat-interval>
+      </simple>
+    </trigger>
+
+    <!-- Import job exercising multi-company logic -->
+    <job>
+      <name>Import.Financials</name>
+      <group>Import</group>
+      <description>Submits ledger data packages for multiple legal entities.</description>
+      <job-type>RecurringIntegrationsScheduler.Job.Import, Job.Import</job-type>
+      <durable>true</durable>
+      <recover>false</recover>
+      <job-data-map>
+        <entry key="AosUri" value="https://test.operations.dynamics.com" />
+        <entry key="AzureAuthEndpoint" value="https://login.microsoftonline.com" />
+        <entry key="AadTenant" value="contoso.onmicrosoft.com" />
+        <entry key="UseServiceAuthentication" value="true" />
+        <entry key="AadClientId" value="aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0003" />
+        <entry key="AadClientSecret" value="{{EncryptedClientSecret}}" />
+        <entry key="InputDir" value="{{TestDataRoot}}/FileSystem/Import/Packages" />
+        <entry key="UploadSuccessDir" value="{{TestDataRoot}}/FileSystem/Upload/Working" />
+        <entry key="UploadErrorsDir" value="{{TestDataRoot}}/FileSystem/Upload/History" />
+        <entry key="ExecutionJobPresent" value="true" />
+        <entry key="MultiCompanyImport" value="true" />
+        <entry key="GetLegalEntityFromSubfolder" value="true" />
+        <entry key="GetLegalEntityFromFilename" value="false" />
+        <entry key="StatusFileExtension" value="status" />
+        <entry key="SearchPattern" value="*.zip" />
+        <entry key="OrderBy" value="LastWriteTime" />
+        <entry key="DataProject" value="LedgerSettlement" />
+        <entry key="OverwriteDataProject" value="false" />
+        <entry key="ExecuteImport" value="true" />
+        <entry key="PackageTemplate" value="{{TestDataRoot}}/FileSystem/Import/Templates/ledger-template.xml" />
+        <entry key="InputFilesArePackages" value="true" />
+        <entry key="UseSftpInbound" value="false" />
+      </job-data-map>
+    </job>
+    <trigger>
+      <cron>
+        <name>Import.Financials.Trigger</name>
+        <group>Import</group>
+        <job-name>Import.Financials</job-name>
+        <job-group>Import</job-group>
+        <cron-expression>0 15 * * * ?</cron-expression>
+      </cron>
+    </trigger>
+
+    <!-- Export job with long polling configuration -->
+    <job>
+      <name>Export.Products</name>
+      <group>Export</group>
+      <description>Exports product catalog packages and monitors completion.</description>
+      <job-type>RecurringIntegrationsScheduler.Job.Export, Job.Export</job-type>
+      <durable>true</durable>
+      <recover>false</recover>
+      <job-data-map>
+        <entry key="AosUri" value="https://test.operations.dynamics.com" />
+        <entry key="AzureAuthEndpoint" value="https://login.microsoftonline.com" />
+        <entry key="AadTenant" value="contoso.onmicrosoft.com" />
+        <entry key="UseServiceAuthentication" value="true" />
+        <entry key="AadClientId" value="aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0004" />
+        <entry key="AadClientSecret" value="{{EncryptedClientSecret}}" />
+        <entry key="ActivityId" value="99999999-aaaa-bbbb-cccc-dddddddddddd" />
+        <entry key="DownloadSuccessDir" value="{{TestDataRoot}}/FileSystem/Export/Staging" />
+        <entry key="DownloadErrorsDir" value="{{TestDataRoot}}/FileSystem/Export/Delivered" />
+        <entry key="DelayBetweenStatusCheck" value="30" />
+        <entry key="DeletePackage" value="false" />
+        <entry key="UnzipPackage" value="false" />
+        <entry key="AddTimestamp" value="true" />
+        <entry key="UseSftpOutbound" value="false" />
+      </job-data-map>
+    </job>
+    <trigger>
+      <cron>
+        <name>Export.Products.Trigger</name>
+        <group>Export</group>
+        <job-name>Export.Products</job-name>
+        <job-group>Export</job-group>
+        <cron-expression>0 0 2 ? * MON-FRI</cron-expression>
+      </cron>
+    </trigger>
+
+    <!-- Execution monitor job for import pipeline -->
+    <job>
+      <name>Monitor.Execution</name>
+      <group>Monitor</group>
+      <description>Tracks execution status and downloads error keys.</description>
+      <job-type>RecurringIntegrationsScheduler.Job.ExecutionMonitor, Job.ExecutionMonitor</job-type>
+      <durable>true</durable>
+      <recover>false</recover>
+      <job-data-map>
+        <entry key="AosUri" value="https://test.operations.dynamics.com" />
+        <entry key="AzureAuthEndpoint" value="https://login.microsoftonline.com" />
+        <entry key="AadTenant" value="contoso.onmicrosoft.com" />
+        <entry key="UseServiceAuthentication" value="false" />
+        <entry key="AadClientId" value="aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0005" />
+        <entry key="UserName" value="monitor@test.contoso.com" />
+        <entry key="UserPassword" value="{{EncryptedUserPassword}}" />
+        <entry key="UploadSuccessDir" value="{{TestDataRoot}}/FileSystem/Upload/Working" />
+        <entry key="ProcessingSuccessDir" value="{{TestDataRoot}}/FileSystem/Export/Delivered" />
+        <entry key="ProcessingErrorsDir" value="{{TestDataRoot}}/FileSystem/Download/Errors" />
+        <entry key="StatusFileExtension" value="status" />
+        <entry key="GetImportTargetErrorKeysFile" value="true" />
+        <entry key="PackageTemplate" value="{{TestDataRoot}}/FileSystem/Import/Templates/ledger-template.xml" />
+        <entry key="DelayBetweenStatusCheck" value="15" />
+      </job-data-map>
+    </job>
+    <trigger>
+      <simple>
+        <name>Monitor.Execution.Trigger</name>
+        <group>Monitor</group>
+        <job-name>Monitor.Execution</job-name>
+        <job-group>Monitor</job-group>
+        <repeat-count>-1</repeat-count>
+        <repeat-interval>00:02:00</repeat-interval>
+      </simple>
+    </trigger>
+
+    <!-- Processing monitor job -->
+    <job>
+      <name>Monitor.Processing</name>
+      <group>Monitor</group>
+      <description>Polls processing queue for stuck messages and cleans up history.</description>
+      <job-type>RecurringIntegrationsScheduler.Job.ProcessingMonitor, Job.ProcessingMonitor</job-type>
+      <durable>true</durable>
+      <recover>false</recover>
+      <job-data-map>
+        <entry key="AosUri" value="https://test.operations.dynamics.com" />
+        <entry key="AzureAuthEndpoint" value="https://login.microsoftonline.com" />
+        <entry key="AadTenant" value="contoso.onmicrosoft.com" />
+        <entry key="UseServiceAuthentication" value="true" />
+        <entry key="AadClientId" value="aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0006" />
+        <entry key="AadClientSecret" value="{{EncryptedClientSecret}}" />
+        <entry key="DelayBetweenStatusCheck" value="60" />
+        <entry key="DeleteExecutionHistoryJobActionPath" value="data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.DeleteExecutionHistoryJob" />
+        <entry key="GetExecutionErrors" value="true" />
+        <entry key="ProcessingSuccessDir" value="{{TestDataRoot}}/FileSystem/Export/Delivered" />
+        <entry key="ProcessingErrorsDir" value="{{TestDataRoot}}/FileSystem/Download/Errors" />
+      </job-data-map>
+    </job>
+    <trigger>
+      <cron>
+        <name>Monitor.Processing.Trigger</name>
+        <group>Monitor</group>
+        <job-name>Monitor.Processing</job-name>
+        <job-group>Monitor</job-group>
+        <cron-expression>0 0/30 * * * ?</cron-expression>
+      </cron>
+    </trigger>
+  </schedule>
+</job-scheduling-data>

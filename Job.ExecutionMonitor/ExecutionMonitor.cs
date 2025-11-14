@@ -45,7 +45,8 @@ namespace RecurringIntegrationsScheduler.Job
         /// <summary>
         /// The HTTP client helper
         /// </summary>
-        private HttpClientHelper _httpClientHelper;
+        private IHttpClientHelper _httpClientHelper;
+        private readonly IHttpClientHelperFactory _httpClientHelperFactory;
 
         /// <summary>
         /// Gets or sets the enqueued jobs.
@@ -76,6 +77,15 @@ namespace RecurringIntegrationsScheduler.Job
         /// <see cref="T:Quartz.ITriggerListener" />s that are watching the job's
         /// execution.
         /// </remarks>
+        public ExecutionMonitor() : this(HttpClientHelperFactory.Default)
+        {
+        }
+
+        internal ExecutionMonitor(IHttpClientHelperFactory httpClientHelperFactory)
+        {
+            _httpClientHelperFactory = httpClientHelperFactory ?? throw new ArgumentNullException(nameof(httpClientHelperFactory));
+        }
+
         public async Task Execute(IJobExecutionContext context)
         {
             try
@@ -139,7 +149,7 @@ namespace RecurringIntegrationsScheduler.Job
         private async Task Process()
         {
             EnqueuedJobs = new ConcurrentQueue<DataMessage>();
-            using (_httpClientHelper = new HttpClientHelper(_settings))
+            using (_httpClientHelper = _httpClientHelperFactory.Create(_settings))
             {
                 foreach (var dataMessage in FileOperationsHelper.GetStatusFiles(MessageStatus.InProcess, _settings.UploadSuccessDir, "*" + _settings.StatusFileExtension))
                 {

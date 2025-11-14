@@ -1,0 +1,1 @@
+This file simulates a payload waiting on the inbound SFTP folder.

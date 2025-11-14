@@ -58,6 +58,10 @@
     <Compile Include="Helpers\FileOperationsHelper.cs" />
     <Compile Include="Helpers\SftpTransferHelper.cs" />
     <Compile Include="Helpers\HttpRetryHandler.cs" />
+    <Compile Include="Helpers\ISftpTransferService.cs" />
+    <Compile Include="Helpers\SftpTransferService.cs" />
+    <Compile Include="Helpers\IHttpClientHelper.cs" />
+    <Compile Include="Helpers\IHttpClientHelperFactory.cs" />
     <Compile Include="JobSettings\ExportJobSettings.cs" />
     <Compile Include="JobSettings\ImportJobSettings.cs" />
     <Compile Include="JobSettings\ExecutionJobSettings.cs" />

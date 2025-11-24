@@ -19,6 +19,7 @@ namespace RecurringIntegrationsScheduler.Forms
             if (Server == null)
             {
                 portNumericUpDown.Value = 22;
+                Text = Properties.Resources.Add_server;
                 return;
             }
 

@@ -229,6 +229,12 @@
     <Compile Include="Forms\ValidateConnection.Designer.cs">
       <DependentUpon>ValidateConnection.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\ValidateSftpConnection.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ValidateSftpConnection.Designer.cs">
+      <DependentUpon>ValidateSftpConnection.cs</DependentUpon>
+    </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

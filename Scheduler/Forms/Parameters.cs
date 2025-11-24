@@ -15,6 +15,7 @@ namespace RecurringIntegrationsScheduler.Forms
         private DataGridView _sftpServersGrid;
         private ToolStripButton _sftpServersEditButton;
         private ToolStripButton _sftpServersDeleteButton;
+        private ToolStripButton _sftpServersValidateButton;
         private DataGridView _sftpCredentialsGrid;
         private ToolStripButton _sftpCredentialsEditButton;
         private ToolStripButton _sftpCredentialsDeleteButton;
@@ -98,9 +99,19 @@ namespace RecurringIntegrationsScheduler.Forms
             };
             _sftpServersDeleteButton.Click += SftpServersDeleteButton_Click;
 
+            _sftpServersValidateButton = new ToolStripButton
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+                Text = Resources.Validate,
+                Image = Resources.ValidateDocument_16x,
+                Enabled = false
+            };
+            _sftpServersValidateButton.Click += SftpServersValidateButton_Click;
+
             toolStrip.Items.Add(addButton);
             toolStrip.Items.Add(_sftpServersEditButton);
             toolStrip.Items.Add(_sftpServersDeleteButton);
+            toolStrip.Items.Add(_sftpServersValidateButton);
 
             return toolStrip;
         }
@@ -438,6 +449,7 @@ namespace RecurringIntegrationsScheduler.Forms
             if ((_sftpServersGrid.RowCount != 0) && (_sftpServersGrid.SelectedRows.Count != 0)) return;
             _sftpServersEditButton.Enabled = false;
             _sftpServersDeleteButton.Enabled = false;
+            _sftpServersValidateButton.Enabled = false;
         }
 
         private void SftpServersGrid_RowStateChanged(object sender, DataGridViewRowStateChangedEventArgs e)
@@ -445,6 +457,7 @@ namespace RecurringIntegrationsScheduler.Forms
             if (e.StateChanged != DataGridViewElementStates.Selected) return;
             _sftpServersEditButton.Enabled = true;
             _sftpServersDeleteButton.Enabled = true;
+            _sftpServersValidateButton.Enabled = true;
         }
 
         private void SftpServersGrid_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -496,6 +509,25 @@ namespace RecurringIntegrationsScheduler.Forms
 
             Properties.Settings.Default.SftpServers.RemoveAt(index);
             Properties.Settings.Default.SftpServers.Insert(index, form.Server);
+        }
+
+        private void SftpServersValidateButton_Click(object sender, EventArgs e)
+        {
+            if (_sftpServersGrid.SelectedRows.Count == 0)
+            {
+                return;
+            }
+
+            var selected = _sftpServersGrid.SelectedRows[0].DataBoundItem as SftpServer;
+
+            using var form = new ValidateSftpConnection
+            {
+                Servers = Properties.Settings.Default.SftpServers,
+                Credentials = Properties.Settings.Default.SftpCredentials,
+                SelectedServer = selected
+            };
+
+            form.ShowDialog();
         }
 
         private void SftpCredentialsAddButton_Click(object sender, EventArgs e)

@@ -777,6 +777,42 @@ namespace RecurringIntegrationsScheduler.Properties {
             }
         }
 
+        internal static string Sftp_ValidateTitle {
+            get {
+                return ResourceManager.GetString("Sftp_ValidateTitle", resourceCulture);
+            }
+        }
+        
+        internal static string Sftp_SelectServer {
+            get {
+                return ResourceManager.GetString("Sftp_SelectServer", resourceCulture);
+            }
+        }
+        
+        internal static string Sftp_SelectCredential {
+            get {
+                return ResourceManager.GetString("Sftp_SelectCredential", resourceCulture);
+            }
+        }
+        
+        internal static string Sftp_ValidationSuccess {
+            get {
+                return ResourceManager.GetString("Sftp_ValidationSuccess", resourceCulture);
+            }
+        }
+        
+        internal static string Sftp_ValidationFailed {
+            get {
+                return ResourceManager.GetString("Sftp_ValidationFailed", resourceCulture);
+            }
+        }
+        
+        internal static string Sftp_ValidationMissingData {
+            get {
+                return ResourceManager.GetString("Sftp_ValidationMissingData", resourceCulture);
+            }
+        }
+        
         internal static string Host_is_required {
             get {
                 return ResourceManager.GetString("Host_is_required", resourceCulture);

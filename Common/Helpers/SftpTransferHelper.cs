@@ -78,6 +78,36 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
             }
         }
 
+        public static void ValidateConnection(SftpConfiguration configuration)
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            if (!configuration.IsConfigured)
+            {
+                throw new InvalidOperationException("SFTP configuration is incomplete.");
+            }
+
+            using (var client = CreateClient(configuration))
+            {
+                client.ConnectionInfo.Timeout = TimeSpan.FromSeconds(10);
+                client.OperationTimeout = TimeSpan.FromSeconds(10);
+                client.Connect();
+
+                if (!client.IsConnected)
+                {
+                    throw new InvalidOperationException("Unable to establish SFTP connection.");
+                }
+
+                var probePath = string.IsNullOrWhiteSpace(configuration.RemoteFolder) ? "/" : configuration.RemoteFolder;
+                client.ListDirectory(probePath);
+
+                client.Disconnect();
+            }
+        }
+
         private static SftpClient CreateClient(SftpConfiguration configuration)
         {
             if (configuration.UsePrivateKey)

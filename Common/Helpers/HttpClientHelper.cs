@@ -60,13 +60,10 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
             };
 
             _authenticationHelper = new AuthenticationHelper(_settings);
-            
-            if(_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper was successfully initialized.
+
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper was successfully initialized.
 Request retry count: {_settings.RetryCount}.
 Delay between retries: {_settings.RetryDelay} seconds.");
-            }
         }
 
         /// <summary>
@@ -88,16 +85,14 @@ Delay between retries: {_settings.RetryDelay} seconds.");
 
             if (bodyStream != null)
             {
-                if (_settings.LogVerbose || Log.IsDebugEnabled)
-                {
-                    Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.PostStreamRequestAsync is being called.
+                Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.PostStreamRequestAsync is being called.
 Uri: {uri.AbsoluteUri},
 
 Parameters:
 
 bodyStream is not null,
 externalidentifier: {externalidentifier}");
-                }
+
                 return await _httpClient.PostAsync(uri, new StreamContent(bodyStream));
             }
             else
@@ -132,16 +127,14 @@ externalidentifier: {externalidentifier}");
 
             if (bodyString != null)
             {
-                if (_settings.LogVerbose || Log.IsDebugEnabled)
-                {
-                    Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.PostStringRequestAsync is being called.
+                Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.PostStringRequestAsync is being called.
 Uri: {uri.AbsoluteUri},
 
 Parameters:
 
 bodyString: {bodyString},
 externalidentifier: {externalidentifier}");
-                }
+
                 return await _httpClient.PostAsync(uri, new StringContent(bodyString, Encoding.UTF8, "application/json"));
             }
             else
@@ -168,15 +161,13 @@ externalidentifier: {externalidentifier}");
             {
                 _httpClient.DefaultRequestHeaders.Add("Authorization", await _authenticationHelper.GetValidAuthenticationHeader());
             }
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetRequestAsync is being called.
+
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GetRequestAsync is being called.
 Uri: {uri.AbsoluteUri},
 
 Parameters:
 
 addAuthorization: {addAuthorization}");
-            }
             return await _httpClient.GetAsync(uri);
         }
 
@@ -209,9 +200,7 @@ addAuthorization: {addAuthorization}");
                 // entity name is required
                 query["entity"] = uploadSettings.EntityName;
             }
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetEnqueueUri is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GetEnqueueUri is being called.
 Parameters:
 
 legalEntity: {legalEntity}
@@ -220,7 +209,6 @@ Output:
 
 Generated Uri: {enqueueUri.Uri.AbsoluteUri}
 Generated query: {enqueueUri.Query}");
-            }
             enqueueUri.Query = query.ToString();
             return enqueueUri.Uri;
         }
@@ -235,13 +223,10 @@ Generated query: {enqueueUri.Query}");
         {
             var downloadSettings = EnsureSettings<DownloadJobSettings>(nameof(GetDequeueUri));
             var dequeueUri = new UriBuilder(GetAosRequestUri(UrlCombine.Combine(ConnectorApiActions.DequeuePath, downloadSettings.ActivityId.ToString()))).Uri;
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetDequeueUri is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GetDequeueUri is being called.
 Output:
 
 Generated Uri: {dequeueUri.AbsoluteUri}");
-            }
             return dequeueUri;
         }
 
@@ -255,13 +240,10 @@ Generated Uri: {dequeueUri.AbsoluteUri}");
         {
             var downloadSettings = EnsureSettings<DownloadJobSettings>(nameof(GetAckUri));
             var ackUri = new UriBuilder(GetAosRequestUri(UrlCombine.Combine(ConnectorApiActions.AckPath, downloadSettings.ActivityId.ToString()))).Uri;
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetAckUri is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GetAckUri is being called.
 Output:
 
 Generated Uri: {ackUri.AbsoluteUri}");
-            }
             return ackUri;
         }
 
@@ -279,9 +261,7 @@ Generated Uri: {ackUri.AbsoluteUri}");
             {
                 Query = "jobId=" + jobId.Replace(@"""", "")
             };
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetJobStatusUri is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GetJobStatusUri is being called.
 Parameters:
 
 jobId: {jobId}
@@ -290,7 +270,6 @@ Output:
 
 Generated uri: {jobStatusUri.Uri.AbsoluteUri}
 Generated query: {jobStatusUri.Query}");
-            }
             return jobStatusUri.Uri;
         }
 
@@ -305,15 +284,12 @@ Generated query: {jobStatusUri.Query}");
             string uniqueFileName = Guid.NewGuid().ToString();
             var parameters = new { uniqueFileName };
             string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetAzureWriteUrl is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GetAzureWriteUrl is being called.
 Uri: {requestUri}
 
 Parameters:
 
 uniqueFileName: {uniqueFileName}");
-            }
             var response = await PostStringRequestAsync(requestUri, parametersJson);
             if (!response.IsSuccessStatusCode)
             {
@@ -339,15 +315,12 @@ Response message: {response.Content}");
 
             var parameters = new { executionId };
             string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-                {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetExecutionSummaryStatus is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GetExecutionSummaryStatus is being called.
 Uri: {requestUri}
 
 Parameters:
 
 executionId: {executionId}");
-            }
             var response = await PostStringRequestAsync(requestUri, parametersJson);
             if (!response.IsSuccessStatusCode)
             {
@@ -376,15 +349,12 @@ Response message: {response.Content}");
 
             var parameters = new { executionId };
             string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetExportedPackageUrl is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GetExportedPackageUrl is being called.
 Uri: {requestUri}
 
 Parameters:
 
 executionId: {executionId}");
-            }
             var response = await PostStringRequestAsync(requestUri, parametersJson);
             if (!response.IsSuccessStatusCode)
             {
@@ -413,15 +383,12 @@ Response message: {response.Content}");
 
             var parameters = new { executionId };
             string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetExecutionSummaryPageUrl is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GetExecutionSummaryPageUrl is being called.
 Uri: {requestUri}
 
 Parameters:
 
 executionId: {executionId}");
-            }
             var response = await PostStringRequestAsync(requestUri, parametersJson);
             if (!response.IsSuccessStatusCode)
             {
@@ -451,11 +418,8 @@ Response message: {response.Content}");
             _httpClient.DefaultRequestHeaders.Add("x-ms-date", DateTime.UtcNow.ToString("R", System.Globalization.CultureInfo.InvariantCulture));
             _httpClient.DefaultRequestHeaders.Add("x-ms-blob-type", "BlockBlob");
             _httpClient.DefaultRequestHeaders.Add("Overwrite", "T");
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.UploadContentsToBlob is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.UploadContentsToBlob is being called.
 Uri: {blobUrl.AbsoluteUri}");
-            }
             var response = await _httpClient.PutAsync(blobUrl.AbsoluteUri, new StreamContent(stream));
             if (!response.IsSuccessStatusCode)
             {
@@ -493,9 +457,7 @@ Response message: {response.Content}");
                 legalEntityId
             };
             string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.ImportFromPackage is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.ImportFromPackage is being called.
 Uri: {requestUri}
 
 Parameters:
@@ -506,7 +468,6 @@ executionId: {executionId}
 execute: {execute}
 overwrite: {overwrite}
 legalEntityId: {legalEntityId}");
-            }
             var response = await PostStringRequestAsync(requestUri, parametersJson);
             if (!response.IsSuccessStatusCode)
             {
@@ -540,15 +501,12 @@ Response message: {response.Content}");
 
             var parameters = new { executionId };
             string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.DeleteExecutionHistoryJob is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.DeleteExecutionHistoryJob is being called.
 Uri: {requestUri}
 
 Parameters:
 
 executionId: {executionId}");
-            }
             var response = await PostStringRequestAsync(requestUri, parametersJson);
             if (!response.IsSuccessStatusCode)
             {
@@ -588,9 +546,7 @@ Response message: {response.Content}");
                 legalEntityId
             };
             string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.ExportToPackage is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.ExportToPackage is being called.
 Uri: {requestUri}
 
 Parameters:
@@ -600,7 +556,6 @@ packageName: {packageName}
 executionId: {executionId}
 reExecute: {reExecute}
 legalEntityId: {legalEntityId}");
-            }
             var response = await PostStringRequestAsync(requestUri, parametersJson);
             if (!response.IsSuccessStatusCode)
             {
@@ -646,9 +601,7 @@ Response message: {response.Content}");
                 legalEntityId
             };
             string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.ExportFromPackage is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.ExportFromPackage is being called.
 Uri: {requestUri}
 
 Parameters:
@@ -659,7 +612,6 @@ executionId: {executionId}
 execute: {execute}
 overwrite: {overwrite}
 legalEntityId: {legalEntityId}");
-            }
             var response = await PostStringRequestAsync(requestUri, parametersJson);
             if (!response.IsSuccessStatusCode)
             {
@@ -692,15 +644,12 @@ Response message: {response.Content}");
             var requestUri = GetAosRequestUri(_settings.GetMessageStatusActionPath);
             var parameters = new { messageId };
             string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetMessageStatus is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GetMessageStatus is being called.
 Uri: {requestUri}
 
 Parameters:
 
 messageId: {messageId}");
-            }
             var response = await PostStringRequestAsync(requestUri, parametersJson);
             if (!response.IsSuccessStatusCode)
             {
@@ -735,16 +684,13 @@ Response message: {response.Content}");
                 entityName
             };
             string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GenerateImportTargetErrorKeysFile is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GenerateImportTargetErrorKeysFile is being called.
 Uri: {requestUri}
 
 Parameters:
 
 executionId: {executionId}
 entityName: {entityName}");
-            }
             var response = await PostStringRequestAsync(requestUri, parametersJson);
             if (!response.IsSuccessStatusCode)
             {
@@ -779,16 +725,13 @@ Response message: {response.Content}");
                 entityName
             };
             string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetImportTargetErrorKeysFileUrl is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GetImportTargetErrorKeysFileUrl is being called.
 Uri: {requestUri}
 
 Parameters:
 
 executionId: {executionId}
 entityName: {entityName}");
-            }
             var response = await PostStringRequestAsync(requestUri, parametersJson);
             if (!response.IsSuccessStatusCode)
             {
@@ -818,15 +761,12 @@ Response message: {response.Content}");
 
             var parameters = new { executionId };
             string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetExecutionErrors is being called.
+            Log.Verbose(_settings.LogVerbose, () => $@"Job: {_settings.JobKey}. HttpClientHelper.GetExecutionErrors is being called.
 Uri: {requestUri}
 
 Parameters:
 
 executionId: {executionId}");
-            }
             var response = await PostStringRequestAsync(requestUri, parametersJson);
             if (!response.IsSuccessStatusCode)
             {

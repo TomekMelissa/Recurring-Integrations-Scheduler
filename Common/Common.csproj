@@ -62,6 +62,7 @@
     <Compile Include="Helpers\SftpTransferService.cs" />
     <Compile Include="Helpers\IHttpClientHelper.cs" />
     <Compile Include="Helpers\IHttpClientHelperFactory.cs" />
+    <Compile Include="Helpers\LogExtensions.cs" />
     <Compile Include="JobSettings\ExportJobSettings.cs" />
     <Compile Include="JobSettings\ImportJobSettings.cs" />
     <Compile Include="JobSettings\ExecutionJobSettings.cs" />

@@ -21,7 +21,7 @@ namespace RecurringIntegrationsScheduler.Server
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
             var logRepository = log4net.LogManager.GetRepository(Assembly.GetEntryAssembly());
-            XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
+            XmlConfigurator.Configure(logRepository, new FileInfo(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile));
 
             HostFactory.Run(x =>
             {

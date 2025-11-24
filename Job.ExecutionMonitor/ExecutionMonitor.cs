@@ -109,16 +109,10 @@ namespace RecurringIntegrationsScheduler.Job
                         Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Retrying_IO_operation_Exception_1, _context.JobDetail.Key, exception.Message));
                     });
 
-                if (_settings.LogVerbose || Log.IsDebugEnabled)
-                {
-                    Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_starting, _context.JobDetail.Key));
-                }
+                Log.VerboseFormat(_settings.LogVerbose, CultureInfo.InvariantCulture, Resources.Job_0_starting, _context.JobDetail.Key);
                 await Process();
 
-                if (_settings.LogVerbose || Log.IsDebugEnabled)
-                {
-                    Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_ended, _context.JobDetail.Key));
-                }
+                Log.VerboseFormat(_settings.LogVerbose, CultureInfo.InvariantCulture, Resources.Job_0_ended, _context.JobDetail.Key);
             }
             catch (Exception ex)
             {
@@ -127,7 +121,7 @@ namespace RecurringIntegrationsScheduler.Job
                     await context.Scheduler.PauseJob(context.JobDetail.Key);
                     Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_was_paused_because_of_error, _context.JobDetail.Key));
                 }
-                if (_settings.LogVerbose || Log.IsDebugEnabled)
+                if (_settings.LogVerbose)
                 {
                     if (!string.IsNullOrEmpty(ex.Message))
                     {
@@ -153,10 +147,12 @@ namespace RecurringIntegrationsScheduler.Job
             {
                 foreach (var dataMessage in FileOperationsHelper.GetStatusFiles(MessageStatus.InProcess, _settings.UploadSuccessDir, "*" + _settings.StatusFileExtension))
                 {
-                    if (_settings.LogVerbose || Log.IsDebugEnabled)
-                    {
-                        Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_File_1_found_in_processing_location_and_added_to_queue_for_status_check, _context.JobDetail.Key, dataMessage.FullPath.Replace(@"{", @"{{").Replace(@"}", @"}}")));
-                    }
+                    Log.VerboseFormat(
+                        _settings.LogVerbose,
+                        CultureInfo.InvariantCulture,
+                        Resources.Job_0_File_1_found_in_processing_location_and_added_to_queue_for_status_check,
+                        _context.JobDetail.Key,
+                        dataMessage.FullPath.Replace(@"{", @"{{").Replace(@"}", @"}}"));
                     EnqueuedJobs.Enqueue(dataMessage);
                 }
 
@@ -207,10 +203,7 @@ namespace RecurringIntegrationsScheduler.Job
         /// <param name="dataMessage">Name of the file whose status is being processed</param>
         private async Task PostProcessMessage(string executionStatus, DataMessage dataMessage)
         {
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_ExecutionId_1_status_check_returned_2, _context.JobDetail.Key, dataMessage.MessageId, executionStatus));
-            }
+            Log.VerboseFormat(_settings.LogVerbose, CultureInfo.InvariantCulture, Resources.Job_0_ExecutionId_1_status_check_returned_2, _context.JobDetail.Key, dataMessage.MessageId, executionStatus);
             switch (executionStatus)
             {
                 case "Succeeded":
@@ -231,10 +224,7 @@ namespace RecurringIntegrationsScheduler.Job
                         await CreateLinkToExecutionSummaryPage(dataMessage.MessageId, processingErrorDestination);
                         if (_settings.GetImportTargetErrorKeysFile)
                         {
-                            if (_settings.LogVerbose || Log.IsDebugEnabled)
-                            {
-                                Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Checking_if_error_keys_file_was_generated, _context.JobDetail.Key));
-                            }
+                            Log.VerboseFormat(_settings.LogVerbose, CultureInfo.InvariantCulture, Resources.Job_0_Checking_if_error_keys_file_was_generated, _context.JobDetail.Key);
                             var fileWithManifest = processingErrorDestination;
                             if(!string.IsNullOrEmpty(_settings.PackageTemplate))
                             {
@@ -243,10 +233,7 @@ namespace RecurringIntegrationsScheduler.Job
                             var entitiesInPackage = GetEntitiesNamesInPackage(fileWithManifest);
                             foreach(var entity in entitiesInPackage)
                             {
-                                if (_settings.LogVerbose || Log.IsDebugEnabled)
-                                {
-                                    Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Checking_for_error_keys_for_data_entity_1, _context.JobDetail.Key, entity));
-                                }
+                                Log.VerboseFormat(_settings.LogVerbose, CultureInfo.InvariantCulture, Resources.Job_0_Checking_for_error_keys_for_data_entity_1, _context.JobDetail.Key, entity);
                                 var errorsExistResponse = await _httpClientHelper.GenerateImportTargetErrorKeysFile(dataMessage.MessageId, entity);
                                 if (errorsExistResponse.IsSuccessStatusCode && Convert.ToBoolean(await HttpClientHelper.ReadResponseStringAsync(errorsExistResponse)))
                                 {
@@ -306,10 +293,7 @@ Error file URL: {errorFileUrl}");
 
                         if (_settings.GetExecutionErrors)
                         {
-                            if (_settings.LogVerbose || Log.IsDebugEnabled)
-                            {
-                                Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Trying_to_download_execution_errors, _context.JobDetail.Key));
-                            }
+                            Log.VerboseFormat(_settings.LogVerbose, CultureInfo.InvariantCulture, Resources.Job_0_Trying_to_download_execution_errors, _context.JobDetail.Key);
                             var response = await _httpClientHelper.GetExecutionErrors(dataMessage.MessageId);
                             if (response.IsSuccessStatusCode)
                             {
@@ -369,10 +353,7 @@ Message Id: {dataMessage.MessageId}");
         /// <returns>Entities list</returns>
         private List<string> GetEntitiesNamesInPackage(string fileName)
         {
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Looking_for_data_entities_in_manifest_file_1, _context.JobDetail.Key, fileName));
-            }
+            Log.VerboseFormat(_settings.LogVerbose, CultureInfo.InvariantCulture, Resources.Job_0_Looking_for_data_entities_in_manifest_file_1, _context.JobDetail.Key, fileName);
 
             var enitiesList = new List<string>();
 

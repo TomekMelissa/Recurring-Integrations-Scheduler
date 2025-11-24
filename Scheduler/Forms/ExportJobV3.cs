@@ -7,6 +7,7 @@ using Quartz.Util;
 using RecurringIntegrationsScheduler.Common.Contracts;
 using RecurringIntegrationsScheduler.Common.Helpers;
 using RecurringIntegrationsScheduler.Controls;
+using RecurringIntegrationsScheduler.Extensions;
 using RecurringIntegrationsScheduler.Properties;
 using RecurringIntegrationsScheduler.Settings;
 using System;
@@ -493,11 +494,11 @@ namespace RecurringIntegrationsScheduler.Forms
                 return;
             }
 
-            _outboundSftpControl.SftpEnabled = map.GetBooleanValue(SettingsConstants.UseSftpOutbound);
-            _outboundSftpControl.RemoteFolder = map.GetString(SettingsConstants.SftpOutboundRemoteFolder);
-            _outboundSftpControl.FileMask = map.GetString(SettingsConstants.SftpOutboundFileMask) ?? Resources.Sftp_DefaultFileMask;
+            _outboundSftpControl.SftpEnabled = map.GetBooleanValueOrDefault(SettingsConstants.UseSftpOutbound);
+            _outboundSftpControl.RemoteFolder = map.GetStringOrDefault(SettingsConstants.SftpOutboundRemoteFolder);
+            _outboundSftpControl.FileMask = map.GetStringOrDefault(SettingsConstants.SftpOutboundFileMask) ?? Resources.Sftp_DefaultFileMask;
 
-            var serverName = map.GetString(SettingsConstants.SftpOutboundServerName);
+            var serverName = map.GetStringOrDefault(SettingsConstants.SftpOutboundServerName);
             if (!string.IsNullOrWhiteSpace(serverName))
             {
                 _outboundSftpControl.SelectedServerName = serverName;
@@ -505,15 +506,15 @@ namespace RecurringIntegrationsScheduler.Forms
             else
             {
                 var server = FormsHelper.FindSftpServer(
-                    map.GetString(SettingsConstants.SftpOutboundHost),
-                    map.GetInt(SettingsConstants.SftpOutboundPort));
+                    map.GetStringOrDefault(SettingsConstants.SftpOutboundHost),
+                    map.GetIntOrDefault(SettingsConstants.SftpOutboundPort));
                 if (server != null)
                 {
                     _outboundSftpControl.SelectedServerName = server.Name;
                 }
             }
 
-            var credentialName = map.GetString(SettingsConstants.SftpOutboundCredentialName);
+            var credentialName = map.GetStringOrDefault(SettingsConstants.SftpOutboundCredentialName);
             if (!string.IsNullOrWhiteSpace(credentialName))
             {
                 _outboundSftpControl.SelectedCredentialName = credentialName;
@@ -521,11 +522,11 @@ namespace RecurringIntegrationsScheduler.Forms
             else
             {
                 var credential = FormsHelper.FindSftpCredential(
-                    map.GetString(SettingsConstants.SftpOutboundUsername),
-                    map.GetBooleanValue(SettingsConstants.SftpOutboundUseKey),
-                    map.GetString(SettingsConstants.SftpOutboundPassword),
-                    map.GetString(SettingsConstants.SftpOutboundKeyPath),
-                    map.GetString(SettingsConstants.SftpOutboundKeyPassphrase));
+                    map.GetStringOrDefault(SettingsConstants.SftpOutboundUsername),
+                    map.GetBooleanValueOrDefault(SettingsConstants.SftpOutboundUseKey),
+                    map.GetStringOrDefault(SettingsConstants.SftpOutboundPassword),
+                    map.GetStringOrDefault(SettingsConstants.SftpOutboundKeyPath),
+                    map.GetStringOrDefault(SettingsConstants.SftpOutboundKeyPassphrase));
                 if (credential != null)
                 {
                     _outboundSftpControl.SelectedCredentialName = credential.Name;

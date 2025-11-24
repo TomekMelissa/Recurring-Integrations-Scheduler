@@ -96,16 +96,10 @@ namespace RecurringIntegrationsScheduler.Job
                         Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Retrying_IO_operation_Exception_1, _context.JobDetail.Key, exception.Message));
                     });
 
-                if (_settings.LogVerbose || Log.IsDebugEnabled)
-                {
-                    Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_starting, _context.JobDetail.Key));
-                }
+                Log.VerboseFormat(_settings.LogVerbose, CultureInfo.InvariantCulture, Resources.Job_0_starting, _context.JobDetail.Key);
                 await Process();
 
-                if (_settings.LogVerbose || Log.IsDebugEnabled)
-                {
-                    Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_ended, _context.JobDetail.Key));
-                }
+                Log.VerboseFormat(_settings.LogVerbose, CultureInfo.InvariantCulture, Resources.Job_0_ended, _context.JobDetail.Key);
             }
             catch (Exception ex)
             {
@@ -114,7 +108,7 @@ namespace RecurringIntegrationsScheduler.Job
                     await context.Scheduler.PauseJob(context.JobDetail.Key);
                     Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_was_paused_because_of_error, _context.JobDetail.Key));
                 }
-                if (_settings.LogVerbose || Log.IsDebugEnabled)
+                if (_settings.LogVerbose)
                 {
                     if (!string.IsNullOrEmpty(ex.Message))
                     {
@@ -163,10 +157,7 @@ namespace RecurringIntegrationsScheduler.Job
                     }
                     executionStatus = await HttpClientHelper.ReadResponseStringAsync(responseGetExecutionSummaryStatus);
 
-                    if (_settings.LogVerbose || Log.IsDebugEnabled)
-                    {
-                        Log.Debug(string.Format(Resources.Job_0_Checking_if_export_is_completed_Try_1_Status_2, _context.JobDetail.Key, attempt, executionStatus));
-                    }
+                    Log.Verbose(_settings.LogVerbose, () => string.Format(Resources.Job_0_Checking_if_export_is_completed_Try_1_Status_2, _context.JobDetail.Key, attempt, executionStatus));
                     if (attempt == 100)//TODO hardcoded
                     {
                         throw new JobExecutionException(string.Format(Resources.Job_0_Checking_for_status_reached_1_attempts_Status_is_2_Exiting, _context.JobDetail.Key, attempt, executionStatus));
@@ -192,10 +183,7 @@ namespace RecurringIntegrationsScheduler.Job
                         {
                             throw new JobExecutionException($"Job: {_context.JobDetail.Key}. GetExportedPackageUrl request failed.");
                         }
-                        if (_settings.LogVerbose || Log.IsDebugEnabled)
-                        {
-                            Log.Debug(string.Format(Resources.Job_0_Trying_to_get_exported_package_URL_Try_1, _context.JobDetail.Key, attempt));
-                        }
+                        Log.Verbose(_settings.LogVerbose, () => string.Format(Resources.Job_0_Trying_to_get_exported_package_URL_Try_1, _context.JobDetail.Key, attempt));
                         if (attempt == 100)//TODO hardcoded
                         {
                             throw new JobExecutionException(string.Format(Resources.Job_0_Request_to_download_exported_package_reached_1_attempts_Exiting, _context.JobDetail.Key, attempt));

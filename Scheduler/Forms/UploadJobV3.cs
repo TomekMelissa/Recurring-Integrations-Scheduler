@@ -7,6 +7,7 @@ using Quartz.Util;
 using RecurringIntegrationsScheduler.Common.Contracts;
 using RecurringIntegrationsScheduler.Common.Helpers;
 using RecurringIntegrationsScheduler.Controls;
+using RecurringIntegrationsScheduler.Extensions;
 using RecurringIntegrationsScheduler.Properties;
 using RecurringIntegrationsScheduler.Settings;
 using System;
@@ -380,11 +381,11 @@ namespace RecurringIntegrationsScheduler.Forms
                 return;
             }
 
-            _inboundSftpControl.SftpEnabled = map.GetBooleanValue(SettingsConstants.UseSftpInbound);
-            _inboundSftpControl.RemoteFolder = map.GetString(SettingsConstants.SftpInboundRemoteFolder);
-            _inboundSftpControl.FileMask = map.GetString(SettingsConstants.SftpInboundFileMask) ?? Resources.Sftp_DefaultFileMask;
+            _inboundSftpControl.SftpEnabled = map.GetBooleanValueOrDefault(SettingsConstants.UseSftpInbound);
+            _inboundSftpControl.RemoteFolder = map.GetStringOrDefault(SettingsConstants.SftpInboundRemoteFolder);
+            _inboundSftpControl.FileMask = map.GetStringOrDefault(SettingsConstants.SftpInboundFileMask) ?? Resources.Sftp_DefaultFileMask;
 
-            var serverName = map.GetString(SettingsConstants.SftpInboundServerName);
+            var serverName = map.GetStringOrDefault(SettingsConstants.SftpInboundServerName);
             if (!string.IsNullOrWhiteSpace(serverName))
             {
                 _inboundSftpControl.SelectedServerName = serverName;
@@ -392,15 +393,15 @@ namespace RecurringIntegrationsScheduler.Forms
             else
             {
                 var fallbackServer = FormsHelper.FindSftpServer(
-                    map.GetString(SettingsConstants.SftpInboundHost),
-                    map.GetInt(SettingsConstants.SftpInboundPort));
+                    map.GetStringOrDefault(SettingsConstants.SftpInboundHost),
+                    map.GetIntOrDefault(SettingsConstants.SftpInboundPort));
                 if (fallbackServer != null)
                 {
                     _inboundSftpControl.SelectedServerName = fallbackServer.Name;
                 }
             }
 
-            var credentialName = map.GetString(SettingsConstants.SftpInboundCredentialName);
+            var credentialName = map.GetStringOrDefault(SettingsConstants.SftpInboundCredentialName);
             if (!string.IsNullOrWhiteSpace(credentialName))
             {
                 _inboundSftpControl.SelectedCredentialName = credentialName;
@@ -408,11 +409,11 @@ namespace RecurringIntegrationsScheduler.Forms
             else
             {
                 var fallbackCredential = FormsHelper.FindSftpCredential(
-                    map.GetString(SettingsConstants.SftpInboundUsername),
-                    map.GetBooleanValue(SettingsConstants.SftpInboundUseKey),
-                    map.GetString(SettingsConstants.SftpInboundPassword),
-                    map.GetString(SettingsConstants.SftpInboundKeyPath),
-                    map.GetString(SettingsConstants.SftpInboundKeyPassphrase));
+                    map.GetStringOrDefault(SettingsConstants.SftpInboundUsername),
+                    map.GetBooleanValueOrDefault(SettingsConstants.SftpInboundUseKey),
+                    map.GetStringOrDefault(SettingsConstants.SftpInboundPassword),
+                    map.GetStringOrDefault(SettingsConstants.SftpInboundKeyPath),
+                    map.GetStringOrDefault(SettingsConstants.SftpInboundKeyPassphrase));
                 if (fallbackCredential != null)
                 {
                     _inboundSftpControl.SelectedCredentialName = fallbackCredential.Name;

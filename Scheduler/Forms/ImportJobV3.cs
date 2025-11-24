@@ -7,6 +7,7 @@ using Quartz.Util;
 using RecurringIntegrationsScheduler.Common.Contracts;
 using RecurringIntegrationsScheduler.Common.Helpers;
 using RecurringIntegrationsScheduler.Controls;
+using RecurringIntegrationsScheduler.Extensions;
 using RecurringIntegrationsScheduler.Properties;
 using RecurringIntegrationsScheduler.Settings;
 using System;
@@ -403,11 +404,11 @@ namespace RecurringIntegrationsScheduler.Forms
                 return;
             }
 
-            _inboundSftpControl.SftpEnabled = map.GetBooleanValue(SettingsConstants.UseSftpInbound);
-            _inboundSftpControl.RemoteFolder = map.GetString(SettingsConstants.SftpInboundRemoteFolder);
-            _inboundSftpControl.FileMask = map.GetString(SettingsConstants.SftpInboundFileMask) ?? Resources.Sftp_DefaultFileMask;
+            _inboundSftpControl.SftpEnabled = map.GetBooleanValueOrDefault(SettingsConstants.UseSftpInbound);
+            _inboundSftpControl.RemoteFolder = map.GetStringOrDefault(SettingsConstants.SftpInboundRemoteFolder);
+            _inboundSftpControl.FileMask = map.GetStringOrDefault(SettingsConstants.SftpInboundFileMask) ?? Resources.Sftp_DefaultFileMask;
 
-            var serverName = map.GetString(SettingsConstants.SftpInboundServerName);
+            var serverName = map.GetStringOrDefault(SettingsConstants.SftpInboundServerName);
             if (!string.IsNullOrWhiteSpace(serverName))
             {
                 _inboundSftpControl.SelectedServerName = serverName;
@@ -415,15 +416,15 @@ namespace RecurringIntegrationsScheduler.Forms
             else
             {
                 var server = FormsHelper.FindSftpServer(
-                    map.GetString(SettingsConstants.SftpInboundHost),
-                    map.GetInt(SettingsConstants.SftpInboundPort));
+                    map.GetStringOrDefault(SettingsConstants.SftpInboundHost),
+                    map.GetIntOrDefault(SettingsConstants.SftpInboundPort));
                 if (server != null)
                 {
                     _inboundSftpControl.SelectedServerName = server.Name;
                 }
             }
 
-            var credentialName = map.GetString(SettingsConstants.SftpInboundCredentialName);
+            var credentialName = map.GetStringOrDefault(SettingsConstants.SftpInboundCredentialName);
             if (!string.IsNullOrWhiteSpace(credentialName))
             {
                 _inboundSftpControl.SelectedCredentialName = credentialName;
@@ -431,11 +432,11 @@ namespace RecurringIntegrationsScheduler.Forms
             else
             {
                 var credential = FormsHelper.FindSftpCredential(
-                    map.GetString(SettingsConstants.SftpInboundUsername),
-                    map.GetBooleanValue(SettingsConstants.SftpInboundUseKey),
-                    map.GetString(SettingsConstants.SftpInboundPassword),
-                    map.GetString(SettingsConstants.SftpInboundKeyPath),
-                    map.GetString(SettingsConstants.SftpInboundKeyPassphrase));
+                    map.GetStringOrDefault(SettingsConstants.SftpInboundUsername),
+                    map.GetBooleanValueOrDefault(SettingsConstants.SftpInboundUseKey),
+                    map.GetStringOrDefault(SettingsConstants.SftpInboundPassword),
+                    map.GetStringOrDefault(SettingsConstants.SftpInboundKeyPath),
+                    map.GetStringOrDefault(SettingsConstants.SftpInboundKeyPassphrase));
                 if (credential != null)
                 {
                     _inboundSftpControl.SelectedCredentialName = credential.Name;
@@ -657,7 +658,14 @@ namespace RecurringIntegrationsScheduler.Forms
 
         private void AddToolStripButton_Click(object sender, EventArgs e)
         {
+            var originalFilenameSeparator = filenameSeparatorTextBox.Text;
             FormsHelper.TrimTextBoxes(this);
+
+            // Preserve whitespace-only separators (e.g. single space) that are intentionally valid for tokenization
+            if (string.IsNullOrEmpty(filenameSeparatorTextBox.Text) && !string.IsNullOrEmpty(originalFilenameSeparator))
+            {
+                filenameSeparatorTextBox.Text = originalFilenameSeparator;
+            }
 
             if (ImportJobDetail == null)
             {

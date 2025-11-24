@@ -90,6 +90,7 @@ Source: "..\Third Party Notices.txt"; DestDir: "{app}"; Flags: ignoreversion; Co
 
 [Registry]
 Root: HKLM; Subkey: "System\CurrentControlSet\Services\EventLog\Recurring Integrations Scheduler\Recurring Integrations Scheduler App"; ValueType: expandsz; ValueName: "EventMessageFile"; ValueData: "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\EventLogMessages.dll"; Flags: uninsdeletekey; Components: App
+Root: HKLM; Subkey: "System\CurrentControlSet\Services\EventLog\Recurring Integrations Scheduler\Recurring Integrations Scheduler Server"; ValueType: expandsz; ValueName: "EventMessageFile"; ValueData: "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\EventLogMessages.dll"; Flags: uninsdeletekey; Components: Scheduler
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{group}\Recurring Integrations Scheduler App"; Filename: "{app}\RecurringIntegrationsScheduler.exe"; WorkingDir: "{app}"

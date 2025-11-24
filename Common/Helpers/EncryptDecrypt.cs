@@ -33,19 +33,23 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
                 throw new ArgumentException("Cipher text cannot be null or empty.", nameof(cipher));
             }
 
+            byte[] data;
             try
             {
-                var data = Convert.FromBase64String(cipher);
-                var decrypted = ProtectedData.Unprotect(data, null, DataProtectionScope.CurrentUser);
-                return Encoding.Unicode.GetString(decrypted);
+                data = Convert.FromBase64String(cipher);
             }
             catch (FormatException ex)
             {
                 throw new InvalidOperationException("Failed to decrypt credentials. Stored value is not valid Base64.", ex);
             }
+            try
+            {
+                var decrypted = ProtectedData.Unprotect(data, null, DataProtectionScope.LocalMachine);
+                return Encoding.Unicode.GetString(decrypted);
+            }
             catch (CryptographicException ex)
             {
-                throw new InvalidOperationException("Failed to decrypt credentials. Re-enter the secret on this machine/user profile.", ex);
+                throw new InvalidOperationException("Failed to decrypt credentials. Re-enter the secret on this machine to regenerate them.", ex);
             }
         }
 
@@ -71,7 +75,7 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         {
             if (plainText == null) throw new ArgumentNullException(nameof(plainText));
             var data = Encoding.Unicode.GetBytes(plainText);
-            var encrypted = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
+            var encrypted = ProtectedData.Protect(data, null, DataProtectionScope.LocalMachine);
             return Convert.ToBase64String(encrypted);
         }
     }

@@ -153,6 +153,7 @@
       <Link>Version.cs</Link>
     </Compile>
     <Compile Include="FormsHelper.cs" />
+    <Compile Include="Extensions\JobDataMapExtensions.cs" />
     <Compile Include="Forms\AboutBox.cs">
       <SubType>Form</SubType>
     </Compile>

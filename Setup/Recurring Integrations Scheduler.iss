@@ -81,7 +81,7 @@ Source: "..\Output\Release\RecurringIntegrationsScheduler.exe.config"; DestDir: 
 
 ; Configuration files
 Source: "..\Output\Release\Schedule.xml"; DestDir: "{app}"; Flags: onlyifdoesntexist uninsneveruninstall; Components: Scheduler
-Source: "..\Output\Release\RecurringIntegrationsScheduler.Server.exe.config"; DestDir: "{app}"; Flags: onlyifdoesntexist; Components: Scheduler
+Source: "..\Output\Release\RecurringIntegrationsScheduler.Server.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Scheduler
 ; ReadMe
 Source: "..\README.MD"; DestDir: "{app}"; Flags: ignoreversion; Components: App Scheduler
 ; License

@@ -37,8 +37,10 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// Opens file as a file stream
         /// </summary>
         /// <param name="filePath">File path</param>
+        /// <param name="fileShare">File sharing mode.</param>
+        /// <param name="fileAccess">Requested file access.</param>
         /// <returns>Stream</returns>
-        public static Stream Read(string filePath, FileShare fileShare = FileShare.Read)
+        public static Stream Read(string filePath, FileShare fileShare = FileShare.Read, FileAccess fileAccess = FileAccess.Read)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
@@ -54,7 +56,7 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
             {
                 return new FileStream(filePath,
                     FileMode.Open,
-                    FileAccess.Read,
+                    fileAccess,
                     fileShare,
                     4096,
                     useAsync: true);

@@ -241,7 +241,21 @@ namespace RecurringIntegrationsScheduler.Job
                             {
                                 tempFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                                 _retryPolicyForIo.Execute(() => FileOperationsHelper.Create(zipToOpen, tempFileName));
-                                var tempZipStream = _retryPolicyForIo.Execute(() => FileOperationsHelper.Read(tempFileName));
+                                var tempZipStream = _retryPolicyForIo.Execute(() => FileOperationsHelper.Read(tempFileName, FileShare.Read, FileAccess.ReadWrite));
+                                if (tempZipStream == null || !tempZipStream.CanRead || !tempZipStream.CanWrite || !tempZipStream.CanSeek)
+                                {
+                                    tempZipStream?.Dispose();
+                                    throw new JobExecutionException(string.Format(CultureInfo.InvariantCulture,
+                                        "Job {0}: Unable to open temporary package '{1}' with required read/write/seek access.",
+                                        _context.JobDetail.Key,
+                                        tempFileName));
+                                }
+
+                                if (tempZipStream.CanSeek)
+                                {
+                                    tempZipStream.Seek(0, SeekOrigin.Begin);
+                                }
+
                                 using (archive = new ZipArchive(tempZipStream, ZipArchiveMode.Update))
                                 {
                                     //Check if package template contains input file and remove it first. It should not be there in the first place.
